@@ -8,30 +8,29 @@ import styles from './LatestResults.module.css'
 
 type ResultUrls = Record<number, string | null>
 
-type RowProps = {
-  position: number
-  url: string | null
-  onUploaded: () => void
-}
-
-function PublicDownload({ url }: { url: string | null }) {
-  if (!url) {
+function PublicDownload({ href }: { href: string | null }) {
+  if (!href) {
     return <span className={styles.rowDownloadDisabled}>Brak wyników</span>
   }
   return (
     <a
-      href={url}
+      href={href}
       className={styles.rowDownload}
       target="_blank"
       rel="noreferrer"
-      download
     >
       Pobierz wyniki
     </a>
   )
 }
 
-function AdminUpload({ position, onUploaded }: RowProps) {
+function AdminUpload({
+  position,
+  onUploaded,
+}: {
+  position: number
+  onUploaded: () => void
+}) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<'idle' | 'uploading' | 'ok' | 'error'>('idle')
   const [error, setError] = useState<string>('')
@@ -94,13 +93,24 @@ function AdminUpload({ position, onUploaded }: RowProps) {
 export default function LatestResults() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
-  const [urls, setUrls] = useState<ResultUrls>({})
+  const [downloadHrefs, setDownloadHrefs] = useState<ResultUrls>({})
 
   const refreshUrls = useCallback(async () => {
     try {
       const res = await fetch('/api/results', { cache: 'no-store' })
-      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; urls?: ResultUrls }
-      if (data.ok && data.urls) setUrls(data.urls)
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean
+        urls?: ResultUrls
+        downloadUrls?: ResultUrls
+      }
+      if (!data.ok || !data.urls) return
+      const next: ResultUrls = {}
+      for (const [k, v] of Object.entries(data.urls)) {
+        const pos = Number(k)
+        const dl = data.downloadUrls?.[pos]
+        next[pos] = dl || v || null
+      }
+      setDownloadHrefs(next)
     } catch {
       /* ignore */
     }
@@ -133,13 +143,9 @@ export default function LatestResults() {
                 )}
               </div>
               {isAdmin ? (
-                <AdminUpload
-                  position={entry.position}
-                  url={urls[entry.position] ?? null}
-                  onUploaded={refreshUrls}
-                />
+                <AdminUpload position={entry.position} onUploaded={refreshUrls} />
               ) : (
-                <PublicDownload url={urls[entry.position] ?? null} />
+                <PublicDownload href={downloadHrefs[entry.position] ?? null} />
               )}
             </div>
           ))}
