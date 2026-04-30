@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { ADMIN_EMAIL } from '@/lib/auth'
 import styles from './page.module.css'
 
 export default function LoginPage() {
@@ -91,9 +90,6 @@ export default function LoginPage() {
           <button type="submit" className={styles.btn} disabled={pending}>
             {pending ? 'Logowanie...' : 'Zaloguj sie'}
           </button>
-          <p className={styles.hint}>
-            Konto testowe admin: {ADMIN_EMAIL}
-          </p>
         </form>
       </main>
       <Footer />
