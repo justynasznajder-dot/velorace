@@ -11,22 +11,9 @@ export default function KontaktPage() {
 
         <div className={styles.grid}>
           <div className={styles.card}>
-            <h2 className={styles.cardTitle}>Biuro platformy</h2>
-            <p>📧 kontakt@velorace.pl</p>
-            <p>📞 +48 123 456 789</p>
-            <p>🕒 Pn–Pt, 9:00–17:00</p>
-          </div>
-
-          <div className={styles.card}>
-            <h2 className={styles.cardTitle}>Dla organizatorów</h2>
-            <p>📧 organizatorzy@velorace.pl</p>
-            <p>Pytania dotyczące rejestracji wyścigów,<br/>panelu zarządzania i integracji API.</p>
-          </div>
-
-          <div className={styles.card}>
-            <h2 className={styles.cardTitle}>Pomoc techniczna</h2>
-            <p>📧 pomoc@velorace.pl</p>
-            <p>Problemy z kontem, płatnościami,<br/>aplikacją mobilną.</p>
+            <h2 className={styles.cardTitle}>Obsługa platformy</h2>
+            <p>📧 kontakt.velorace@gmail.com</p>
+            <p>📞 607 267 492</p>
           </div>
         </div>
       </main>
