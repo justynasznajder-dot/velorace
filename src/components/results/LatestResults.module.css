@@ -1,0 +1,96 @@
+.raceHeader {
+  padding: 8px 16px;
+  background: var(--black);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.raceName {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 1px;
+}
+
+.raceMeta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.row:hover { background: var(--surf2); }
+
+.pos {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--muted);
+  text-align: center;
+}
+
+.gold   { color: #F0C040; }
+.silver { color: #B8B8C8; }
+.bronze { color: #CD7F40; }
+
+.name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.team {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.time {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.gap {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.footer {
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surf2);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.pdfLink {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--red);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.pdfLink:hover { color: var(--red-b); }

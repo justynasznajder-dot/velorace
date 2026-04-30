@@ -1,0 +1,35 @@
+.page {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px;
+}
+
+.mainCol {
+  min-width: 0;
+}
+
+.sideCol {
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .page {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .sideCol {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .sideCol {
+    grid-template-columns: 1fr;
+  }
+}

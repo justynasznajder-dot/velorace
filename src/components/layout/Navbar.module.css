@@ -1,0 +1,131 @@
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--black);
+  border-bottom: 2px solid var(--red);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  height: 52px;
+  gap: 0;
+}
+
+.logo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: var(--white);
+  margin-right: 40px;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.logo span {
+  color: var(--red);
+}
+
+.links {
+  display: flex;
+  gap: 0;
+  flex: 1;
+}
+
+.link {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 16px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-right: 1px solid var(--border);
+  transition: color 0.15s, background 0.15s;
+  position: relative;
+  text-decoration: none;
+}
+
+.link:first-child {
+  border-left: 1px solid var(--border);
+}
+
+.link:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.active {
+  color: var(--white);
+}
+
+.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--red);
+}
+
+.liveLink {
+  color: var(--red-b) !important;
+}
+
+.liveDot {
+  width: 6px;
+  height: 6px;
+  background: var(--red-b);
+  border-radius: 50%;
+  animation: blink 0.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.right {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 12px;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.search:hover {
+  border-color: var(--stone);
+  color: var(--text);
+}
+
+.loginBtn {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: var(--red);
+  color: var(--white);
+  border: none;
+  padding: 8px 20px;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+.loginBtn:hover {
+  background: var(--red-b);
+}

@@ -1,0 +1,64 @@
+.body {
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.raceName {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.clock {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.unit { text-align: center; }
+
+.num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 44px;
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1;
+}
+
+.label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.sep {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--red);
+  padding-top: 4px;
+  line-height: 1;
+}
+
+.cta {
+  display: block;
+  background: var(--red);
+  color: var(--white);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 12px;
+  border-radius: 3px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.cta:hover { background: var(--red-b); }

@@ -1,0 +1,80 @@
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  flex: 1;
+  padding: 8px 4px;
+  text-align: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.tab:last-child { border-right: none; }
+.tab:hover:not(.activeTab) { color: var(--text); }
+
+.activeTab {
+  color: var(--white);
+  background: var(--black);
+  border-bottom: 2px solid var(--red);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.row:last-child { border-bottom: none; }
+.row:hover { background: var(--surf2); }
+
+.pos {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--muted);
+  text-align: center;
+}
+
+.top { color: var(--red); }
+
+.name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.team {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.pts {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pts small {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'Barlow', sans-serif;
+}

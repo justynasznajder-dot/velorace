@@ -1,0 +1,134 @@
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.pageTitle {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+  border-left: 4px solid var(--red);
+  padding-left: 16px;
+}
+
+.list { display: flex; flex-direction: column; gap: 12px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: background 0.15s;
+}
+
+.card:hover { background: var(--surf2); }
+
+.cardLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dateBox {
+  background: var(--black);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.day {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1;
+}
+
+.month {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-top: 2px;
+}
+
+.info { flex: 1; min-width: 0; }
+
+.raceName {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.barWrap { display: flex; flex-direction: column; gap: 4px; }
+
+.barTrack {
+  width: 100%;
+  max-width: 300px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--red);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.barLabel {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.barLabel strong { color: var(--red-b); }
+
+.cta {
+  flex-shrink: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: var(--red);
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: 3px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.cta:hover { background: var(--red-b); }
+
+.empty {
+  font-size: 14px;
+  color: var(--muted);
+  padding: 32px 0;
+}
