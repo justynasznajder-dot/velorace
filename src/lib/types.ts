@@ -1,6 +1,6 @@
 // ── Races ──────────────────────────────────────────────
 export type RaceStatus = 'open' | 'soon' | 'live' | 'finished'
-export type RaceCategory = 'Elita/U23' | 'Masters 30+' | 'U19/Elita' | 'Open' | 'Open Gravel'
+export type RaceCategory = string
 
 export interface Race {
   id: string
