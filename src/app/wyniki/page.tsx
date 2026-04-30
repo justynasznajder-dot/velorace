@@ -4,12 +4,15 @@ import { LATEST_RESULTS } from '@/lib/data'
 import styles from './page.module.css'
 
 export default function WynikiPage() {
+  const SHOW_RESULTS = false
+  const results = SHOW_RESULTS ? LATEST_RESULTS : []
+
   return (
     <>
       <Navbar />
       <main className={styles.page}>
         <h1 className={styles.pageTitle}>Wyniki</h1>
-        {LATEST_RESULTS.map(result => (
+        {results.map(result => (
           <div key={result.raceId} className={styles.card}>
             <div className={styles.cardHeader}>
               <span>{result.raceName}</span>
@@ -26,6 +29,11 @@ export default function WynikiPage() {
             ))}
           </div>
         ))}
+        {results.length === 0 && (
+          <p style={{ color: 'var(--muted)', fontSize: '14px' }}>
+            Na ten moment brak opublikowanych wyników.
+          </p>
+        )}
       </main>
       <Footer />
     </>

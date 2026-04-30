@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useAuth } from '@/components/auth/AuthProvider'
 import styles from './Navbar.module.css'
 
 const NAV_LINKS = [
@@ -9,13 +10,12 @@ const NAV_LINKS = [
   { label: 'Wyniki',        href: '/wyniki' },
   { label: 'Kalendarz',     href: '/kalendarz' },
   { label: 'Live',          href: '/live', isLive: true },
-  { label: 'Regulaminy',    href: '/regulaminy' },
-  { label: 'Rankingi',      href: '/rankingi' },
   { label: 'Kontakt',       href: '/kontakt' },
 ]
 
 export default function Navbar() {
   const pathname = usePathname()
+  const { user, loading, logout } = useAuth()
 
   return (
     <nav className={styles.nav}>
@@ -41,11 +41,14 @@ export default function Navbar() {
       </div>
 
       <div className={styles.right}>
-        <div className={styles.search}>
-          <span>🔍</span>
-          <span>Szukaj zawodnika...</span>
-        </div>
-        <button className={styles.loginBtn}>Zaloguj się</button>
+        {loading ? null : user ? (
+          <>
+            <span className={styles.userBadge}>Admin</span>
+            <button className={styles.loginBtn} onClick={() => void logout()}>Wyloguj</button>
+          </>
+        ) : (
+          <Link href="/login" className={styles.loginBtn}>Zaloguj się</Link>
+        )}
       </div>
     </nav>
   )

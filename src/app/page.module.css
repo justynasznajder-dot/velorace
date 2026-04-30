@@ -7,6 +7,14 @@
   padding: 24px 32px;
 }
 
+.todayDate {
+  grid-column: 1 / -1;
+  color: #b8c2cf;
+  font-size: 13px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
 .mainCol {
   min-width: 0;
 }

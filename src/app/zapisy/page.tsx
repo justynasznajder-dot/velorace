@@ -4,7 +4,8 @@ import { RACES, formatDate, spotsLeft } from '@/lib/data'
 import styles from './page.module.css'
 
 export default function ZapisyPage() {
-  const openRaces = RACES.filter(r => r.status === 'open')
+  const SHOW_OPEN_SIGNUPS = false
+  const openRaces = SHOW_OPEN_SIGNUPS ? RACES.filter(r => r.status === 'open') : []
 
   return (
     <>

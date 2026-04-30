@@ -37,7 +37,7 @@
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 18px;
   font-weight: 900;
-  color: var(--muted);
+  color: var(--white);
   text-align: center;
 }
 
@@ -54,6 +54,56 @@
 .team {
   font-size: 11px;
   color: var(--muted);
+}
+
+.rowDownload {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--red);
+  text-align: right;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.rowDownload:hover {
+  color: var(--red-b);
+}
+
+.rowDownloadDisabled {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rowAdmin {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.adminOk {
+  font-size: 10px;
+  color: #6cd86c;
+}
+
+.adminError {
+  font-size: 10px;
+  color: #ff8f8f;
+  max-width: 220px;
+  text-align: right;
 }
 
 .time {

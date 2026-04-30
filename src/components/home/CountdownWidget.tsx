@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import Widget from '@/components/shared/Widget'
 import { RACES, getNextRace } from '@/lib/data'
 import styles from './CountdownWidget.module.css'
@@ -53,9 +52,9 @@ export default function CountdownWidget() {
             <div className={styles.label}>min</div>
           </div>
         </div>
-        <Link href={`/zapisy/${race.id}`} className={styles.cta}>
+        <button type="button" className={`${styles.cta} ${styles.ctaDisabled}`} disabled aria-disabled="true">
           Zapisz się teraz →
-        </Link>
+        </button>
       </div>
     </Widget>
   )

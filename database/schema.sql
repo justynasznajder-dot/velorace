@@ -5,7 +5,8 @@
 
 -- ── Rozszerzenia ─────────────────────────────────────────────
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";,
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ── ENUM types ───────────────────────────────────────────────
 CREATE TYPE user_role AS ENUM (
@@ -217,12 +218,12 @@ CREATE INDEX idx_results_position ON results(race_id, position_overall);
 -- ── live_timing ───────────────────────────────────────────────
 -- Aktualizowane w czasie rzeczywistym podczas wyścigu
 CREATE TABLE live_timing (
-  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   race_id         UUID NOT NULL REFERENCES races(id) ON DELETE CASCADE,
   bib_number      INT NOT NULL,
   user_id         UUID REFERENCES users(id) ON DELETE SET NULL,
   position        INT,
-  current_time    INTERVAL,
+  elapsed_time    INTERVAL,
   gap_to_leader   INTERVAL,
   current_km      NUMERIC(6,2),
   current_lap     SMALLINT,
@@ -231,7 +232,6 @@ CREATE TABLE live_timing (
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (race_id, bib_number)
 );
-
 CREATE INDEX idx_live_race     ON live_timing(race_id);
 CREATE INDEX idx_live_position ON live_timing(race_id, position);
 

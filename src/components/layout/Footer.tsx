@@ -4,7 +4,7 @@ import styles from './Footer.module.css'
 const LINKS = {
   wyścigi:    [['Kalendarz','/kalendarz'],['Zapisy online','/zapisy'],['Wyniki','/wyniki'],['Regulaminy','/regulaminy']],
   zawodnik:   [['Mój profil','/profil'],['Historia startów','/historia'],['Ranking krajowy','/rankingi'],['Certyfikaty','/certyfikaty']],
-  platforma:  [['Dla organizatorów','/organizatorzy'],['Aplikacja mobilna','/aplikacja'],['API','/api'],['Kontakt / Pomoc','/kontakt']],
+  platforma:  [['Kontakt / Pomoc','/kontakt']],
 } as const
 
 export default function Footer() {
@@ -18,7 +18,9 @@ export default function Footer() {
           </p>
         </div>
 
-        {Object.entries(LINKS).map(([section, links]) => (
+        {Object.entries(LINKS)
+          .filter(([section]) => section !== 'zawodnik')
+          .map(([section, links]) => (
           <div key={section} className={styles.col}>
             <h4>{section.charAt(0).toUpperCase() + section.slice(1)}</h4>
             {(links as readonly (readonly [string, string])[]).map(([label, href]) => (

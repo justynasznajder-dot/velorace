@@ -59,6 +59,15 @@
   border-radius: 3px;
   text-decoration: none;
   transition: background 0.2s;
+  border: none;
+  width: 100%;
 }
 
 .cta:hover { background: var(--red-b); }
+
+.ctaDisabled,
+.ctaDisabled:hover {
+  background: #6b0d0d;
+  color: #f0dede;
+  cursor: not-allowed;
+}
