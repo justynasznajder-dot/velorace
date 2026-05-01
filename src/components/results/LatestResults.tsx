@@ -26,13 +26,17 @@ function PublicDownload({ href }: { href: string | null }) {
 
 function AdminUpload({
   position,
+  fileHref,
+  fileName,
   onUploaded,
 }: {
   position: number
-  onUploaded: () => void
+  fileHref: string | null
+  fileName: string | null
+  onUploaded: () => void | Promise<void>
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
-  const [status, setStatus] = useState<'idle' | 'uploading' | 'ok' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'error'>('idle')
   const [error, setError] = useState<string>('')
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -57,8 +61,8 @@ function AdminUpload({
         setError(payload.message || 'Nie udalo sie wgrac pliku.')
         return
       }
-      setStatus('ok')
-      onUploaded()
+      setStatus('idle')
+      await Promise.resolve(onUploaded())
     } catch {
       setStatus('error')
       setError('Blad polaczenia.')
@@ -69,13 +73,27 @@ function AdminUpload({
 
   return (
     <div className={styles.rowAdmin}>
+      {fileHref ? (
+        <div className={styles.adminHasFile}>
+          <span className={styles.adminHasFileLabel}>Plik PDF jest wgrany</span>
+          {fileName ? <span className={styles.adminHasFileName}>{fileName}</span> : null}
+          <a
+            className={styles.adminHasFileLink}
+            href={fileHref}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Otwórz / pobierz
+          </a>
+        </div>
+      ) : null}
       <button
         type="button"
         className={styles.rowDownload}
         onClick={() => inputRef.current?.click()}
         disabled={status === 'uploading'}
       >
-        {status === 'uploading' ? 'Wgrywanie...' : 'Wstaw wyniki'}
+        {status === 'uploading' ? 'Wgrywanie...' : fileHref ? 'Podmień plik' : 'Wstaw wyniki'}
       </button>
       <input
         ref={inputRef}
@@ -84,7 +102,6 @@ function AdminUpload({
         onChange={handleFile}
         style={{ display: 'none' }}
       />
-      {status === 'ok' && <span className={styles.adminOk}>OK</span>}
       {status === 'error' && <span className={styles.adminError}>{error}</span>}
     </div>
   )
@@ -94,6 +111,7 @@ export default function LatestResults() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'admin'
   const [downloadHrefs, setDownloadHrefs] = useState<ResultUrls>({})
+  const [resultFileNames, setResultFileNames] = useState<ResultUrls>({})
 
   const refreshUrls = useCallback(async () => {
     try {
@@ -102,15 +120,19 @@ export default function LatestResults() {
         ok?: boolean
         urls?: ResultUrls
         downloadUrls?: ResultUrls
+        fileNames?: ResultUrls
       }
       if (!data.ok || !data.urls) return
       const next: ResultUrls = {}
+      const names: ResultUrls = {}
       for (const [k, v] of Object.entries(data.urls)) {
         const pos = Number(k)
         const dl = data.downloadUrls?.[pos]
         next[pos] = dl || v || null
+        names[pos] = data.fileNames?.[pos] ?? null
       }
       setDownloadHrefs(next)
+      setResultFileNames(names)
     } catch {
       /* ignore */
     }
@@ -143,7 +165,12 @@ export default function LatestResults() {
                 )}
               </div>
               {isAdmin ? (
-                <AdminUpload position={entry.position} onUploaded={refreshUrls} />
+                <AdminUpload
+                  position={entry.position}
+                  fileHref={downloadHrefs[entry.position] ?? null}
+                  fileName={resultFileNames[entry.position] ?? null}
+                  onUploaded={refreshUrls}
+                />
               ) : (
                 <PublicDownload href={downloadHrefs[entry.position] ?? null} />
               )}
