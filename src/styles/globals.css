@@ -82,6 +82,3 @@ input {
   50% { opacity: 0.6; }
 }
 
-body.is-admin-auth .admin-hide {
-  display: none !important;
-}

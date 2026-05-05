@@ -1,6 +1,7 @@
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { RACES, formatDate, spotsLeft } from '@/lib/data'
+import { getRaceTypeLabel } from '@/lib/raceDisplay'
 import styles from './page.module.css'
 
 export default function ZapisyPage() {
@@ -31,7 +32,7 @@ export default function ZapisyPage() {
                     <div className={styles.meta}>
                       <span>📍 {race.city}</span>
                       <span>📏 {race.distance} km</span>
-                      <span>🏷️ {race.category}</span>
+                      <span>🏷️ {getRaceTypeLabel(race.category)}</span>
                     </div>
                     {/* Occupancy bar */}
                     <div className={styles.barWrap}>

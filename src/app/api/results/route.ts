@@ -1,6 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { list } from '@vercel/blob'
-import { RESULT_CATEGORY_POSITIONS, parseResultBlobPathname } from '@/lib/results'
+import { getDefaultResultsRaceId, getRaceResultsPdfContext, isAllowedResultsRaceId } from '@/lib/raceDb'
+import {
+  RESULT_CATEGORY_POSITIONS,
+  getResultsBlobPrefixCandidates,
+  parseResultBlobPathname,
+  resultsBlobSlugSegment,
+} from '@/lib/results'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -25,49 +31,139 @@ async function listAllBlobsWithPrefix(prefix: string) {
   return out
 }
 
-export async function GET() {
-  const empty = Object.fromEntries(
-    RESULT_CATEGORY_POSITIONS.map(p => [p, null as string | null]),
-  ) as Record<number, string | null>
-  const urls = { ...empty }
-  const downloadUrls = { ...empty }
-  const fileNames = { ...empty }
+type SlotBest = { url: string; downloadUrl: string; uploadedAt: number; fileName: string }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return NextResponse.json({ ok: true, urls, downloadUrls, fileNames })
+export async function GET(req: NextRequest) {
+  const raceIdParam = req.nextUrl.searchParams.get('raceId')?.trim() || ''
+  const raceId = raceIdParam || (await getDefaultResultsRaceId())
+
+  const emptySlots = (n: number) =>
+    Object.fromEntries(Array.from({ length: n }, (_, i) => [i + 1, null])) as Record<number, string | null>
+
+  if (!raceId || !(await isAllowedResultsRaceId(raceId))) {
+    const urls = emptySlots(5)
+    return NextResponse.json(
+      { ok: false, message: 'Brak lub nieznany parametr raceId.', urls, downloadUrls: urls, fileNames: urls },
+      { status: 400 },
+    )
+  }
+
+  if (!process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
+    const urls = emptySlots(5)
+    return NextResponse.json(
+      {
+        ok: false,
+        message:
+          'Serwer nie ma BLOB_READ_WRITE_TOKEN — nie można odczytać listy plików z Vercel Blob. Dodaj token do .env.local (lokalnie) lub zmiennych projektu na Vercel.',
+        urls,
+        downloadUrls: urls,
+        fileNames: urls,
+        raceId,
+      },
+      { status: 503 },
+    )
   }
 
   try {
-    const blobs = await listAllBlobsWithPrefix('wyniki/')
-    const best = new Map<
-      number,
-      { url: string; downloadUrl: string; uploadedAt: number; fileName: string }
-    >()
+    const ctx = await getRaceResultsPdfContext(raceId)
+    if (!ctx) {
+      const urls = emptySlots(5)
+      return NextResponse.json(
+        { ok: false, message: 'Nie znaleziono wyścigu.', urls, downloadUrls: urls, fileNames: urls, raceId },
+        { status: 404 },
+      )
+    }
+
+    const slugSeg = resultsBlobSlugSegment(ctx.slug)
+    const mode = ctx.effectiveMode
+    const activeSlots = mode === 'category' ? ctx.categorySlots : ctx.waveSlots
+    let slotCount =
+      activeSlots.length > 0
+        ? activeSlots.length
+        : RESULT_CATEGORY_POSITIONS.length
+
+    const labels: Record<number, string> = {}
+    if (activeSlots.length > 0) {
+      for (const s of activeSlots) {
+        labels[s.slot] = s.label
+      }
+    } else {
+      for (const p of RESULT_CATEGORY_POSITIONS) {
+        labels[p] = `Wyniki — slot ${p}`
+      }
+    }
+
+    const urls = emptySlots(slotCount) as Record<number, string | null>
+    const downloadUrls = { ...urls }
+    const fileNames = { ...urls }
+
+    const best = new Map<number, SlotBest>()
+
+    const blobs = (
+      await Promise.all(getResultsBlobPrefixCandidates(ctx.raceYear).map(prefix => listAllBlobsWithPrefix(`${prefix}/`)))
+    ).flat()
 
     for (const blob of blobs) {
       const parsed = parseResultBlobPathname(blob.pathname)
       if (!parsed) continue
       const t = new Date(blob.uploadedAt).getTime()
-      const cur = best.get(parsed.position)
-      if (!cur || t > cur.uploadedAt) {
-        best.set(parsed.position, {
-          url: blob.url,
-          downloadUrl: blob.downloadUrl,
-          uploadedAt: t,
-          fileName: decodeBlobFileName(parsed.fileName),
-        })
+
+      if (parsed.kind === 'slug') {
+        if (parsed.slug !== slugSeg || parsed.mode !== mode) continue
+        if (parsed.slotIndex < 1 || parsed.slotIndex > slotCount) continue
+        const slot = parsed.slotIndex
+        const cur = best.get(slot)
+        if (!cur || t > cur.uploadedAt) {
+          best.set(slot, {
+            url: blob.url,
+            downloadUrl: blob.downloadUrl,
+            uploadedAt: t,
+            fileName: decodeBlobFileName(parsed.fileName),
+          })
+        }
+        continue
+      }
+
+      if (parsed.kind === 'legacy' && parsed.raceId === raceId) {
+        const slot = parsed.position
+        if (slot < 1 || slot > slotCount) continue
+        const cur = best.get(slot)
+        if (!cur || t > cur.uploadedAt) {
+          best.set(slot, {
+            url: blob.url,
+            downloadUrl: blob.downloadUrl,
+            uploadedAt: t,
+            fileName: decodeBlobFileName(parsed.fileName),
+          })
+        }
       }
     }
 
-    for (const pos of RESULT_CATEGORY_POSITIONS) {
-      const b = best.get(pos)
-      urls[pos] = b?.url ?? null
-      downloadUrls[pos] = b?.downloadUrl ?? null
-      fileNames[pos] = b?.fileName ?? null
+    for (let s = 1; s <= slotCount; s++) {
+      const b = best.get(s)
+      urls[s] = b?.url ?? null
+      downloadUrls[s] = b?.downloadUrl ?? null
+      fileNames[s] = b?.fileName ?? null
     }
 
-    return NextResponse.json({ ok: true, urls, downloadUrls, fileNames })
-  } catch {
-    return NextResponse.json({ ok: false, urls, downloadUrls, fileNames }, { status: 500 })
+    return NextResponse.json({
+      ok: true,
+      urls,
+      downloadUrls,
+      fileNames,
+      labels,
+      resultsPdfMode: mode,
+      slotCount,
+      raceId,
+    })
+  } catch (e) {
+    console.error('[api/results]', e)
+    const urls = emptySlots(5)
+    const message =
+      e instanceof Error ? e.message : 'Nie udało się pobrać listy plików z Vercel Blob (list).'
+    return NextResponse.json(
+      { ok: false, message, urls, downloadUrls: urls, fileNames: urls, raceId },
+      { status: 500 },
+    )
   }
 }

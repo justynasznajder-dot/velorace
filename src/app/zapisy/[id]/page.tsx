@@ -1,6 +1,7 @@
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { RACES, formatDate } from '@/lib/data'
+import { formatEntryFeePln, getRaceTypeLabel } from '@/lib/raceDisplay'
 import { notFound } from 'next/navigation'
 import styles from './page.module.css'
 
@@ -21,7 +22,7 @@ export default function ZapisyRacePage({ params }: Props) {
         <div className={styles.header}>
           <div className={styles.back}><a href="/zapisy">← Powrót do zapisów</a></div>
           <h1 className={styles.pageTitle}>{race.name}</h1>
-          <p className={styles.subtitle}>{full} · {race.city} · {race.distance} km · {race.category}</p>
+          <p className={styles.subtitle}>{full} · {race.city} · {race.distance} km · {getRaceTypeLabel(race.category)}</p>
         </div>
 
         <div className={styles.layout}>
@@ -116,7 +117,22 @@ export default function ZapisyRacePage({ params }: Props) {
               <div className={styles.infoRow}><span>📅 Data</span><span>{full}</span></div>
               <div className={styles.infoRow}><span>📍 Start</span><span>{race.city}</span></div>
               <div className={styles.infoRow}><span>📏 Dystans</span><span>{race.distance} km</span></div>
-              <div className={styles.infoRow}><span>🏷️ Kategorie</span><span>{race.category}</span></div>
+              {race.lapCount != null && (
+                <div className={styles.infoRow}><span>🔁 Okrążenia</span><span>{race.lapCount}</span></div>
+              )}
+              {race.lapsDistanceKm != null && (
+                <div className={styles.infoRow}>
+                  <span>📐 Dł. okrążenia</span>
+                  <span>{race.lapsDistanceKm} km</span>
+                </div>
+              )}
+              <div className={styles.infoRow}><span>🏷️ Kategorie</span><span>{getRaceTypeLabel(race.category)}</span></div>
+              {race.entryFeePln != null && (
+                <div className={styles.infoRow}>
+                  <span>💳 Wpłata (pierwsza kat.)</span>
+                  <span>{formatEntryFeePln(race.entryFeePln)}</span>
+                </div>
+              )}
               {race.elevationGain && (
                 <div className={styles.infoRow}><span>⛰️ Przewyższenie</span><span>{race.elevationGain} m</span></div>
               )}

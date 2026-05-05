@@ -6,22 +6,31 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:seed-templates": "node scripts/seed-category-templates.mjs",
+    "db:seed-platform-organizer": "node scripts/seed-platform-organizer.mjs",
+    "db:create-admin-user": "node scripts/create-admin-user.mjs",
+    "db:migrate-races-country-spots-nullable": "node scripts/run-sql-file.mjs database/migrations/20260205_races_country_spots_nullable.sql",
+    "blob:migrate-results-prefix": "node scripts/migrate-results-blob-prefix.mjs"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
     "@vercel/blob": "^2.3.3",
+    "bcryptjs": "^3.0.3",
     "next": "14.2.3",
     "nodemailer": "^8.0.7",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/nodemailer": "^8.0.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
+    "postgres": "^3.4.9",
     "typescript": "^5"
   }
 }

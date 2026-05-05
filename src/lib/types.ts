@@ -1,5 +1,15 @@
+/** Szablon z tabeli `category_templates` (słownik PZKol) — bez FK do `race_categories`. */
+export interface CategoryTemplate {
+  id: number
+  name: string
+  gender?: 'M' | 'K' | null
+  birthYearMin?: number
+  birthYearMax?: number
+  displayOrder: number
+}
+
 // ── Races ──────────────────────────────────────────────
-export type RaceStatus = 'open' | 'soon' | 'live' | 'finished'
+export type RaceStatus = 'open' | 'soon' | 'closed' | 'live' | 'finished' | 'cancelled'
 export type RaceCategory = string
 
 export interface Race {
@@ -7,14 +17,18 @@ export interface Race {
   name: string
   date: string          // ISO date string
   city: string
-  distance: number      // km
+  distance: number      // km (z bazy: COALESCE pierwszej kategorii, races.distance_km)
   category: RaceCategory
   status: RaceStatus
   spotsTotal: number
   spotsTaken: number
   elevationGain?: number   // metres
   maxElevation?: number    // metres
-  type?: 'road' | 'criterium' | 'gravel' | 'mountain'
+  type?: 'road' | 'criterium' | 'gravel' | 'mountain' | 'track' | 'cyclocross'
+  lapCount?: number
+  lapsDistanceKm?: number
+  entryFeePln?: number
+  regulationUrl?: string
 }
 
 // ── Results ────────────────────────────────────────────

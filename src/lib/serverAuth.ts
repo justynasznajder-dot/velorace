@@ -10,6 +10,7 @@ type AuthPayload = {
   email: string
   role: 'admin'
   iat: number
+  id?: string
 }
 
 function getSecret() {
@@ -53,6 +54,7 @@ export function createAuthToken(user: AuthUser) {
     email: user.email,
     role: user.role,
     iat: Date.now(),
+    ...(user.id ? { id: user.id } : {}),
   }
   const payloadEncoded = base64UrlEncode(JSON.stringify(payload))
   const signature = sign(payloadEncoded)
@@ -67,7 +69,9 @@ export function parseAuthToken(token: string | undefined | null): AuthUser | nul
   try {
     const parsed = JSON.parse(base64UrlDecode(payloadEncoded)) as AuthPayload
     if (!parsed?.email || parsed?.role !== 'admin') return null
-    return { email: parsed.email, role: 'admin' }
+    const out: AuthUser = { email: parsed.email, role: 'admin' }
+    if (typeof parsed.id === 'string' && parsed.id.length > 0) out.id = parsed.id
+    return out
   } catch {
     return null
   }

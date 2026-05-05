@@ -1,6 +1,8 @@
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-import { RACES, formatDate, spotsLeft } from '@/lib/data'
+import { formatDate } from '@/lib/data'
+import { formatEntryFeePln, getRaceTypeLabel } from '@/lib/raceDisplay'
+import { getRaceByIdFromDatabase } from '@/lib/raceDb'
 import { notFound } from 'next/navigation'
 import styles from './page.module.css'
 
@@ -8,12 +10,30 @@ interface Props {
   params: { id: string }
 }
 
-export default function RaceDetailPage({ params }: Props) {
-  const race = RACES.find(r => r.id === params.id)
+export default async function RaceDetailPage({ params }: Props) {
+  const race = await getRaceByIdFromDatabase(params.id)
   if (!race) notFound()
 
   const { full } = formatDate(race.date)
-  const left = spotsLeft(race)
+  const left = Math.max(0, race.spotsTotal - race.spotsTaken)
+
+  const stats: { label: string; value: string }[] = [
+    { label: 'Dystans', value: `${race.distance} km` },
+  ]
+  if (race.lapCount != null) {
+    stats.push({ label: 'Liczba okrążeń', value: String(race.lapCount) })
+  }
+  if (race.lapsDistanceKm != null) {
+    stats.push({ label: 'Długość okrążenia', value: `${race.lapsDistanceKm} km` })
+  }
+  if (race.entryFeePln != null) {
+    stats.push({ label: 'Wpłata (wg kategorii)', value: formatEntryFeePln(race.entryFeePln) })
+  }
+  stats.push(
+    { label: 'Przewyższenie', value: race.elevationGain ? `${race.elevationGain} m` : '—' },
+    { label: 'Maks. wysokość', value: race.maxElevation ? `${race.maxElevation} m` : '—' },
+    { label: 'Miejsca', value: `${race.spotsTaken} / ${race.spotsTotal}` },
+  )
 
   return (
     <>
@@ -28,7 +48,7 @@ export default function RaceDetailPage({ params }: Props) {
               <span>📅 {full}</span>
               <span>📍 {race.city}</span>
               <span>📏 {race.distance} km</span>
-              <span>🏷️ {race.category}</span>
+              <span>🏷️ {getRaceTypeLabel(race.type || race.category)}</span>
             </div>
           </div>
           {race.status === 'open' && (
@@ -41,12 +61,7 @@ export default function RaceDetailPage({ params }: Props) {
         <div className={styles.grid}>
           {/* Stats */}
           <div className={styles.statsGrid}>
-            {[
-              { label: 'Dystans', value: `${race.distance} km` },
-              { label: 'Przewyższenie', value: race.elevationGain ? `${race.elevationGain} m` : '—' },
-              { label: 'Maks. wysokość', value: race.maxElevation ? `${race.maxElevation} m` : '—' },
-              { label: 'Miejsca',        value: `${race.spotsTaken} / ${race.spotsTotal}` },
-            ].map(s => (
+            {stats.map(s => (
               <div key={s.label} className={styles.statCell}>
                 <div className={styles.statVal}>{s.value}</div>
                 <div className={styles.statLabel}>{s.label}</div>

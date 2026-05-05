@@ -3,12 +3,12 @@ import Footer from '@/components/layout/Footer'
 import Notice from '@/components/home/Notice'
 import QuickLinks from '@/components/home/QuickLinks'
 import UpcomingRaces from '@/components/races/UpcomingRaces'
-import LatestResults from '@/components/results/LatestResults'
 import DocumentsList from '@/components/shared/DocumentsList'
 import LiveWidget from '@/components/live/LiveWidget'
 import RankingsWidget from '@/components/rankings/RankingsWidget'
 import RiderSearch from '@/components/shared/RiderSearch'
 import CountdownWidget from '@/components/home/CountdownWidget'
+import { listHomePageRacesCurrentYear } from '@/lib/raceDb'
 import styles from './page.module.css'
 
 const HOME_SECTIONS_VISIBILITY = {
@@ -20,7 +20,10 @@ const HOME_SECTIONS_VISIBILITY = {
   riderSearch: false,
 } as const
 
-export default function HomePage() {
+export default async function HomePage() {
+  const upcomingRaces = await listHomePageRacesCurrentYear()
+  const nextRace = upcomingRaces[0] ?? null
+
   const today = new Date().toLocaleDateString('pl-PL', {
     weekday: 'long',
     day: '2-digit',
@@ -36,15 +39,8 @@ export default function HomePage() {
         {/* ── Main column ── */}
         <div className={styles.mainCol}>
           {HOME_SECTIONS_VISIBILITY.notice && <Notice />}
-          <div className="admin-hide">
-            <QuickLinks />
-          </div>
-          {HOME_SECTIONS_VISIBILITY.upcomingRaces && (
-            <div className="admin-hide">
-              <UpcomingRaces />
-            </div>
-          )}
-          <LatestResults />
+          <QuickLinks />
+          {HOME_SECTIONS_VISIBILITY.upcomingRaces && <UpcomingRaces limitPerSection={5} />}
           {HOME_SECTIONS_VISIBILITY.documentsList && <DocumentsList />}
         </div>
 
@@ -53,9 +49,7 @@ export default function HomePage() {
           {HOME_SECTIONS_VISIBILITY.liveWidget && <LiveWidget />}
           {HOME_SECTIONS_VISIBILITY.rankingsWidget && <RankingsWidget />}
           {HOME_SECTIONS_VISIBILITY.riderSearch && <RiderSearch />}
-          <div className="admin-hide">
-            <CountdownWidget />
-          </div>
+          <CountdownWidget race={nextRace} />
         </aside>
       </main>
       <Footer />

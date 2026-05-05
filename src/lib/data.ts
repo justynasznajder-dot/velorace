@@ -1,40 +1,14 @@
 import type { Race, RaceResult, LiveRace, RankingEntry, Document } from './types'
 
-// ── Races ──────────────────────────────────────────────
-export const RACES: Race[] = [
-  {
-    id: 'xxxix-chrzastowice-2026',
-    name: 'XXXIX Ogólnopolski wyścig kolarski "O puchar wótja gminy Chrząstowice"',
-    date: '2026-05-01',
-    city: 'Dębie',
-    distance: 0,
-    category: 'Puchar Polski U-23 · Mistrzostwa Woj. Opolskiego LZS',
-    status: 'soon',
-    spotsTotal: 1,
-    spotsTaken: 0,
-    elevationGain: 0,
-    maxElevation: 0,
-    type: 'road',
-  },
-]
+// ── Races (statyczny fallback; kalendarz publiczny może też brać dane z API / bazy) ──
+export const RACES: Race[] = []
 
-// ── Latest results ─────────────────────────────────────
-export const LATEST_RESULTS: RaceResult[] = [
-  {
-    raceId: 'krakow-classic-2025',
-    raceName: 'XXXIX Ogólnopolski wyścig kolarski "O puchar wótja gminy Chrząstowice"',
-    date: '2025-05-08',
-    distance: 138,
-    totalRiders: 210,
-    entries: [
-      { position: 1, riderName: 'Junior Młodszy', team: '54 km (4x13,5 km)', time: '3:21:44', gap: '—', bibNumber: 42 },
-      { position: 2, riderName: 'Młodzik / Młodziczka', team: 'Juniorka Młodsza', time: '3:21:57', gap: '+0:13', bibNumber: 17 },
-      { position: 3, riderName: 'Młodzież szkolna', team: '', time: '3:22:05', gap: '+0:21', bibNumber: 8 },
-      { position: 4, riderName: 'Elita, Orlik', team: 'Elita — 108 km (8x13,5 km)', time: '3:22:19', gap: '+0:35', bibNumber: 88 },
-      { position: 5, riderName: 'Junior', team: '81 km (6x13,5 km)', time: '3:22:27', gap: '+0:43', bibNumber: 23 },
-    ],
-  },
-]
+// ── Latest results (puste — wyniki z Blob / panel admina po dodaniu wyścigu) ──
+export const LATEST_RESULTS: RaceResult[] = []
+
+export function getLatestResultByRaceId(raceId: string): RaceResult | undefined {
+  return LATEST_RESULTS.find(r => r.raceId === raceId)
+}
 
 // ── Live race ──────────────────────────────────────────
 export const LIVE_RACE: LiveRace = {

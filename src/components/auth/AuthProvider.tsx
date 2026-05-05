@@ -18,27 +18,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let active = true
+    const ac = new AbortController()
+    const timeoutMs = 15000
+    const t = window.setTimeout(() => ac.abort(), timeoutMs)
+
     ;(async () => {
       try {
-        const res = await fetch('/api/auth/me', { cache: 'no-store' })
+        const res = await fetch('/api/auth/me', { cache: 'no-store', signal: ac.signal })
         if (!res.ok) return
         const data = (await res.json()) as { user?: AuthUser }
         if (active && data.user?.role === 'admin') {
           setUser(data.user)
         }
+      } catch {
+        /* sieć / parsowanie / timeout — user=null */
       } finally {
-        if (active) setLoading(false)
+        window.clearTimeout(t)
+        // Zawsze kończymy „loading” — w Strict Mode cleanup ustawia active=false przed końcem fetcha;
+        // gdybyśmy tu sprawdzali active, UI zostawałoby na zawsze na „Sprawdzam sesję…”.
+        setLoading(false)
       }
     })()
+
     return () => {
       active = false
+      ac.abort()
+      window.clearTimeout(t)
     }
   }, [])
-
-  useEffect(() => {
-    document.body.classList.toggle('is-admin-auth', Boolean(user))
-    return () => document.body.classList.remove('is-admin-auth')
-  }, [user])
 
   const login = useCallback(async (email: string, password: string) => {
     const res = await fetch('/api/auth/login', {

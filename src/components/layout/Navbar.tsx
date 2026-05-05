@@ -14,10 +14,15 @@ const NAV_LINKS = [
   { label: 'Kontakt',       href: '/kontakt' },
 ]
 
+function isAdminPanelPath(pathname: string) {
+  return pathname === '/admin' || pathname.startsWith('/admin/')
+}
+
 export default function Navbar() {
   const pathname = usePathname()
   const { user, loading, logout } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  const onAdminPanel = isAdminPanelPath(pathname)
 
   useEffect(() => {
     setMenuOpen(false)
@@ -47,11 +52,15 @@ export default function Navbar() {
       </div>
 
       <div className={styles.right}>
-        {loading ? null : user ? (
+        {user ? (
           <>
-            <span className={`${styles.userBadge} ${styles.hideOnMobile}`}>Admin</span>
+            {!onAdminPanel ? (
+              <Link href="/admin" className={`${styles.loginBtn} ${styles.hideOnMobile}`}>
+                Panel admina
+              </Link>
+            ) : null}
             <button
-              className={`${styles.loginBtn} ${styles.hideOnMobile}`}
+              className={`${styles.outlineBtn} ${styles.hideOnMobile}`}
               onClick={() => void logout()}
             >
               Wyloguj
@@ -95,11 +104,15 @@ export default function Navbar() {
           ))}
 
           <div className={styles.mobileAuth}>
-            {loading ? null : user ? (
+            {user ? (
               <>
-                <span className={styles.userBadge}>Admin</span>
+                {!onAdminPanel ? (
+                  <Link href="/admin" className={styles.loginBtn} onClick={() => setMenuOpen(false)}>
+                    Panel admina
+                  </Link>
+                ) : null}
                 <button
-                  className={styles.loginBtn}
+                  className={styles.outlineBtn}
                   onClick={() => {
                     setMenuOpen(false)
                     void logout()

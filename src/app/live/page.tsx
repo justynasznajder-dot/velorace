@@ -11,22 +11,11 @@ export default function LivePage() {
         <div className={styles.card} style={{ marginTop: 24 }}>
           <div className={styles.cardHeader}>
             <span>Lista wyścigów</span>
-            <span>1 wyścig</span>
+            <span>0</span>
           </div>
-          <a
-            href="https://www.webscorer.com/rewosport"
-            target="_blank"
-            rel="noreferrer"
-            className={styles.row}
-            style={{ textDecoration: 'none' }}
-          >
-            <span className={styles.pos}>1</span>
-            <span className={styles.name}>
-              XXXIX Ogólnopolski wyścig kolarski "O puchar wótja gminy Chrząstowice"
-            </span>
-            <span className={styles.time} style={{ color: 'var(--red)' }}>Webscorer</span>
-            <span className={styles.gap}>→</span>
-          </a>
+          <p style={{ padding: '16px 20px', margin: 0, color: 'var(--muted, #aaa)' }}>
+            Brak aktywnego live timingu — po dodaniu wyścigu w systemie pojawi się tu link lub osadzony podgląd.
+          </p>
         </div>
       </main>
       <Footer />

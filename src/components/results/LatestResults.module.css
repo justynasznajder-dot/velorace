@@ -77,6 +77,82 @@
   color: var(--red-b);
 }
 
+.rowDelete {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ff8f8f;
+  text-align: right;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.rowDelete:hover {
+  color: #ffc9a8;
+}
+
+.deleteConfirmBox {
+  margin-top: 2px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 143, 143, 0.35);
+  border-radius: 6px;
+  background: rgba(255, 143, 143, 0.08);
+  display: grid;
+  gap: 8px;
+  width: min(260px, 100%);
+}
+
+.deleteConfirmText {
+  font-size: 11px;
+  color: #ffc9a8;
+  text-align: right;
+}
+
+.deleteConfirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.deleteConfirmCancel,
+.deleteConfirmOk {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.deleteConfirmCancel {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+}
+
+.deleteConfirmCancel:hover {
+  color: var(--white);
+}
+
+.deleteConfirmOk {
+  border: 1px solid var(--red, #c41e3a);
+  background: var(--red, #c41e3a);
+  color: var(--white);
+}
+
+.deleteConfirmOk:hover {
+  background: var(--red-b, #e04a5f);
+  border-color: var(--red-b, #e04a5f);
+}
+
 .rowDownloadDisabled {
   font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px;
@@ -84,6 +160,14 @@
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rowActionPending {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--stone);
   text-align: right;
   white-space: nowrap;
 }
@@ -131,6 +215,17 @@
 .adminOk {
   font-size: 10px;
   color: #6cd86c;
+}
+
+.resultsListAlert {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #ffc9a8;
+  background: rgba(212, 0, 0, 0.12);
+  border: 1px solid rgba(255, 143, 143, 0.35);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
 }
 
 .adminError {

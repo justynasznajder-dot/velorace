@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Widget from '@/components/shared/Widget'
-import { RACES, getNextRace } from '@/lib/data'
+import type { Race } from '@/lib/types'
 import styles from './CountdownWidget.module.css'
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 
-export default function CountdownWidget() {
-  const race = getNextRace()
+export default function CountdownWidget({ race }: { race: Race | null }) {
   const [countdown, setCountdown] = useState({ d: '00', h: '00', m: '00' })
 
   useEffect(() => {

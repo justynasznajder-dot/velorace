@@ -119,19 +119,24 @@ CREATE TABLE races (
   race_time_start     TIME,
   city                TEXT NOT NULL,
   region              TEXT,
-  country             CHAR(2) NOT NULL DEFAULT 'PL',
+  country             CHAR(2),
   distance_km         NUMERIC(6,2),
   elevation_gain_m    INT,
   max_elevation_m     INT,
   lap_count           SMALLINT,
   laps_distance_km    NUMERIC(5,2),
-  spots_total         INT NOT NULL DEFAULT 200,
+  spots_total         INT,
   entry_fee_pln       NUMERIC(8,2),
   description         TEXT,
   registration_opens  TIMESTAMPTZ,
   registration_closes TIMESTAMPTZ,
   gpx_url             TEXT,
   cover_image_url     TEXT,
+  results_pdf_slot_mode TEXT CHECK (results_pdf_slot_mode IS NULL OR results_pdf_slot_mode IN ('category', 'wave')),
+  regulation_blob_path TEXT,
+  regulation_blob_url  TEXT,
+  regulation_file_name TEXT,
+  regulation_uploaded_at TIMESTAMPTZ,
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -139,6 +144,18 @@ CREATE TABLE races (
 CREATE INDEX idx_races_date     ON races(race_date);
 CREATE INDEX idx_races_status   ON races(status);
 CREATE INDEX idx_races_slug     ON races(slug);
+
+-- globalny słownik kategorii (PZKol) — bez FK do race_categories
+CREATE TABLE category_templates (
+  id              SERIAL PRIMARY KEY,
+  name            TEXT NOT NULL UNIQUE,
+  gender          CHAR(1) NULL,
+  birth_year_min  SMALLINT NULL,
+  birth_year_max  SMALLINT NULL,
+  display_order   SMALLINT NOT NULL DEFAULT 0
+);
+
+CREATE INDEX idx_category_templates_order ON category_templates(display_order);
 
 -- kategorie startowe w wyścigu
 CREATE TABLE race_categories (
@@ -151,8 +168,31 @@ CREATE TABLE race_categories (
   entry_fee_pln   NUMERIC(8,2),
   spots_total     INT,
   bib_start       INT,                         -- pierwsza numeracja startowa
-  display_order   SMALLINT DEFAULT 0
+  display_order   SMALLINT DEFAULT 0,
+  distance_km       NUMERIC(6,2),              -- nadpisuje races.distance_km (NULL = z wyścigu)
+  lap_count         SMALLINT,                  -- nadpisuje races.lap_count
+  laps_distance_km  NUMERIC(5,2)               -- nadpisuje races.laps_distance_km
 );
+
+-- Fale startu: wspólna godzina + wiele kategorii; liczba okrążeń nadal w race_categories.lap_count
+CREATE TABLE race_start_waves (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  race_id         UUID NOT NULL REFERENCES races(id) ON DELETE CASCADE,
+  start_time      TIME NOT NULL,
+  sort_order      SMALLINT NOT NULL DEFAULT 0,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_race_start_waves_race ON race_start_waves(race_id);
+
+CREATE TABLE race_start_wave_categories (
+  wave_id         UUID NOT NULL REFERENCES race_start_waves(id) ON DELETE CASCADE,
+  category_id     UUID NOT NULL REFERENCES race_categories(id) ON DELETE CASCADE,
+  PRIMARY KEY (wave_id, category_id)
+);
+
+CREATE UNIQUE INDEX idx_race_start_wave_categories_one_wave_per_category
+  ON race_start_wave_categories(category_id);
 
 -- ── registrations ─────────────────────────────────────────────
 CREATE TABLE registrations (
@@ -361,6 +401,32 @@ CREATE TRIGGER trg_races_updated_at
 INSERT INTO organizers (id, name, short_name, email) VALUES
   ('00000000-0000-0000-0000-000000000001', 'Silesia Cycling Club', 'SCC', 'kontakt@scc.pl');
 
+-- Szablony kategorii PZKol (słownik)
+INSERT INTO category_templates (name, gender, birth_year_min, birth_year_max, display_order) VALUES
+  ('Żak', 'M', NULL, NULL, 0),
+  ('Żakini', 'K', NULL, NULL, 1),
+  ('Młodzik', 'M', NULL, NULL, 2),
+  ('Młodziczka', 'K', NULL, NULL, 3),
+  ('Junior Młodszy', 'M', NULL, NULL, 4),
+  ('Juniorka Młodsza', 'K', NULL, NULL, 5),
+  ('Junior', 'M', NULL, NULL, 6),
+  ('Juniorka', 'K', NULL, NULL, 7),
+  ('Orlik', 'M', NULL, NULL, 8),
+  ('Orliczka', 'K', NULL, NULL, 9),
+  ('Elita Mężczyzn', 'M', NULL, NULL, 10),
+  ('Elita Kobiet', 'K', NULL, NULL, 11),
+  ('Masters M20', 'M', NULL, NULL, 12),
+  ('Masters M30', 'M', NULL, NULL, 13),
+  ('Masters M40', 'M', NULL, NULL, 14),
+  ('Masters M50', 'M', NULL, NULL, 15),
+  ('Masters M60', 'M', NULL, NULL, 16),
+  ('Masters M70', 'M', NULL, NULL, 17),
+  ('Masters K30', 'K', NULL, NULL, 18),
+  ('Masters K40', 'K', NULL, NULL, 19),
+  ('Masters K50', 'K', NULL, NULL, 20),
+  ('Masters K55', 'K', NULL, NULL, 21),
+  ('Masters K60', 'K', NULL, NULL, 22);
+
 -- Sezon
 INSERT INTO ranking_seasons (id, year, name, is_active, started_at) VALUES
   ('00000000-0000-0000-0000-000000000010', 2025, 'Sezon 2025', TRUE, '2025-03-01');
@@ -373,6 +439,26 @@ INSERT INTO users (id, email, first_name, last_name, license_number, club, role)
   ('00000000-0000-0000-0000-000000000104', 'wisniewski@test.pl',  'Tomasz',  'Wiśniewski','PL-2024-0008', 'WKK Wrocław',  'rider'),
   ('00000000-0000-0000-0000-000000000105', 'sedzia@test.pl',      'Jan',     'Sędzia',    NULL,           NULL,           'judge_chief'),
   ('00000000-0000-0000-0000-000000000106', 'biuro@test.pl',       'Anna',    'Biuro',     NULL,           NULL,           'race_office');
+
+-- Organizator techniczny panelu (stały UUID — PLATFORM_ORGANIZER_DEFAULT_ID w aplikacji)
+INSERT INTO organizers (id, name, short_name, email, is_active) VALUES
+  ('a0000000-0000-4000-8000-000000000001'::uuid, 'Platforma VeloRace', 'VeloRace', 'kontakt@velorace.pl', true)
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  short_name = EXCLUDED.short_name,
+  email = EXCLUDED.email,
+  is_active = EXCLUDED.is_active;
+
+INSERT INTO organizer_members (organizer_id, user_id, is_owner)
+SELECT
+  'a0000000-0000-4000-8000-000000000001'::uuid,
+  u.id,
+  true
+FROM users u
+WHERE u.role = 'admin'::user_role
+  AND u.is_active = true
+ON CONFLICT (organizer_id, user_id) DO UPDATE SET
+  is_owner = EXCLUDED.is_owner;
 
 -- Wyścigi
 INSERT INTO races (id, organizer_id, name, slug, race_type, status, race_date, city, distance_km, elevation_gain_m, max_elevation_m, spots_total, entry_fee_pln, registration_closes) VALUES

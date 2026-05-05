@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -30,6 +30,12 @@ export default function LoginPage() {
     )
   }
 
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace('/')
+    }
+  }, [loading, user, router])
+
   if (user) {
     return (
       <>
@@ -37,7 +43,7 @@ export default function LoginPage() {
         <main className={styles.page}>
           <h1 className={styles.title}>Logowanie</h1>
           <div className={styles.card}>
-            <p>Zalogowano jako {user.email}.</p>
+            <p>Przekierowanie na stronę główną…</p>
           </div>
         </main>
         <Footer />
@@ -54,7 +60,7 @@ export default function LoginPage() {
       setPending(false)
       return
     }
-    router.push('/')
+    router.replace('/')
   }
 
   return (
