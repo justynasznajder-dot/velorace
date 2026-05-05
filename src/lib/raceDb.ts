@@ -387,6 +387,14 @@ export function slugifyBase(name: string): string {
     .slice(0, 80)
 }
 
+/** Domyślny slug (URL / segment folderu R2): `YYYYMMDD-nazwa` — data na początku ułatwia przeglądanie bucketu. */
+export function defaultAutoRaceSlug(name: string, raceDateYyyyMmDd: string): string {
+  const d = raceDateYyyyMmDd.trim().replace(/-/g, '')
+  const core = slugifyBase(name)
+  const raw = core ? `${d}-${core}` : d
+  return raw.replace(/-+/g, '-').replace(/^-|-$/g, '')
+}
+
 export async function getPlatformOrganizerId(): Promise<string | null> {
   const env = process.env.PLATFORM_ORGANIZER_ID?.trim()
   if (env) return env
@@ -555,9 +563,7 @@ export async function insertAdminRace(
     }
   }
 
-  let slug =
-    emptyToNull(payload.slug) ||
-    `${slugifyBase(payload.name)}-${payload.race_date.replace(/-/g, '')}`.replace(/-+/g, '-')
+  let slug = emptyToNull(payload.slug) || defaultAutoRaceSlug(payload.name, payload.race_date)
 
   const name = payload.name.trim()
   const city = payload.city.trim()
@@ -1275,9 +1281,7 @@ export async function updateAdminRace(
   const curSlugRows = await sql`SELECT slug FROM races WHERE id = ${raceId}::uuid LIMIT 1`
   const currentSlug = String((curSlugRows[0] as { slug: string }).slug)
 
-  let slug =
-    emptyToNull(payload.slug) ||
-    `${slugifyBase(name)}-${raceDate.replace(/-/g, '')}`.replace(/-+/g, '-')
+  let slug = emptyToNull(payload.slug) || defaultAutoRaceSlug(name, raceDate)
   if (!slug) slug = currentSlug
 
   let raceRowUpdated = false

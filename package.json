@@ -11,7 +11,9 @@
     "db:seed-templates": "node scripts/seed-category-templates.mjs",
     "db:seed-platform-organizer": "node scripts/seed-platform-organizer.mjs",
     "db:create-admin-user": "node scripts/create-admin-user.mjs",
-    "db:migrate-races-country-spots-nullable": "node scripts/run-sql-file.mjs database/migrations/20260205_races_country_spots_nullable.sql"
+    "db:migrate-races-country-spots-nullable": "node scripts/run-sql-file.mjs database/migrations/20260205_races_country_spots_nullable.sql",
+    "db:migrate-race-slug-r2-date-prefix": "node scripts/migrate-race-slug-r2-date-prefix.mjs",
+    "db:migrate-race-slug-r2-date-prefix:dry-run": "node scripts/migrate-race-slug-r2-date-prefix.mjs --dry-run"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1043.0",
