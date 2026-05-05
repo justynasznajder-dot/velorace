@@ -3,6 +3,7 @@ import { formatDate } from '@/lib/data'
 import { listHomePageFinishedRacesCurrentYear, listHomePageRacesCurrentYear } from '@/lib/raceDb'
 import { getRaceTypeLabel } from '@/lib/raceDisplay'
 import type { Race } from '@/lib/types'
+import ResultsDownloadLink from '@/components/races/ResultsDownloadLink'
 import styles from './UpcomingRaces.module.css'
 
 function CalendarIcon() {
@@ -89,9 +90,11 @@ export default async function UpcomingRaces({
                   ) : (
                     <span className={`${styles.rightLink} ${styles.rightLinkDisabled}`}>Pobierz regulamin</span>
                   )}
-                  <a href={`/wyniki/${race.id}/pobierz`} className={styles.rightLink}>
-                    Pobierz wyniki
-                  </a>
+                  <ResultsDownloadLink
+                    raceId={race.id}
+                    className={styles.rightLink}
+                    disabledClassName={styles.rightLinkDisabled}
+                  />
                   {race.status === 'open' ? (
                     <a href={`/zapisy/${race.id}`} className={styles.rightLink}>
                       Zapisz się
@@ -146,9 +149,11 @@ export default async function UpcomingRaces({
                   ) : (
                     <span className={`${styles.rightLink} ${styles.rightLinkDisabled}`}>Pobierz regulamin</span>
                   )}
-                  <a href={`/wyniki/${race.id}/pobierz`} className={styles.rightLink}>
-                    Pobierz wyniki
-                  </a>
+                  <ResultsDownloadLink
+                    raceId={race.id}
+                    className={styles.rightLink}
+                    disabledClassName={styles.rightLinkDisabled}
+                  />
                   <span className={`${styles.rightLink} ${styles.rightLinkDisabled}`}>Zapisz się</span>
                 </div>
               </div>

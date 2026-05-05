@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { del, list, put } from '@vercel/blob'
+import { deleteObjectsByPath, hasObjectStoreConfig, listObjects, putObject } from '@/lib/objectStore'
 import { getAuthUserFromRequest } from '@/lib/serverAuth'
 import { getRaceResultsPdfContext, isAllowedResultsRaceId } from '@/lib/raceDb'
 import {
@@ -19,10 +19,10 @@ export const dynamic = 'force-dynamic'
 const MAX_BYTES = 25 * 1024 * 1024
 
 async function listAllBlobsWithPrefix(prefix: string) {
-  const out: Awaited<ReturnType<typeof list>>['blobs'] = []
+  const out: Awaited<ReturnType<typeof listObjects>>['blobs'] = []
   let cursor: string | undefined
   for (;;) {
-    const batch = await list({ prefix, cursor })
+    const batch = await listObjects({ prefix, cursor })
     out.push(...batch.blobs)
     if (!batch.hasMore || !batch.cursor) break
     cursor = batch.cursor
@@ -84,9 +84,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, message: 'Brak dostepu.' }, { status: 403 })
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  if (!hasObjectStoreConfig()) {
     return NextResponse.json(
-      { ok: false, message: 'Brak BLOB_READ_WRITE_TOKEN. Skonfiguruj Vercel Blob.' },
+      { ok: false, message: 'Brak konfiguracji R2. Uzupełnij zmienne R2_*.' },
       { status: 500 },
     )
   }
@@ -130,16 +130,11 @@ export async function POST(req: NextRequest) {
       await Promise.all(resolved.value.folderPrefixesToClear.map(prefix => listAllBlobsWithPrefix(prefix)))
     ).flat()
     if (existing.length > 0) {
-      await del(Array.from(new Set(existing.map(b => b.url))))
+      await deleteObjectsByPath(Array.from(new Set(existing.map(b => b.pathname))))
     }
 
     const pathname = `${folderPrefix}${originalName}`
-    const blob = await put(pathname, file, {
-      access: 'public',
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: 'application/pdf',
-    })
+    const blob = await putObject(pathname, file, { contentType: 'application/pdf' })
 
     return NextResponse.json({
       ok: true,
@@ -150,7 +145,7 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     console.error('[results/upload]', e)
     return NextResponse.json(
-      { ok: false, message: 'Nie udalo sie wgrac pliku do Vercel Blob.' },
+      { ok: false, message: 'Nie udalo sie wgrac pliku do Cloudflare R2.' },
       { status: 500 },
     )
   }
@@ -162,9 +157,9 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ ok: false, message: 'Brak dostepu.' }, { status: 403 })
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  if (!hasObjectStoreConfig()) {
     return NextResponse.json(
-      { ok: false, message: 'Brak BLOB_READ_WRITE_TOKEN. Skonfiguruj Vercel Blob.' },
+      { ok: false, message: 'Brak konfiguracji R2. Uzupełnij zmienne R2_*.' },
       { status: 500 },
     )
   }
@@ -185,13 +180,13 @@ export async function DELETE(req: NextRequest) {
     if (existing.length === 0) {
       return NextResponse.json({ ok: true, deleted: 0 })
     }
-    const uniqueUrls = Array.from(new Set(existing.map(b => b.url)))
-    await del(uniqueUrls)
-    return NextResponse.json({ ok: true, deleted: uniqueUrls.length })
+    const uniquePaths = Array.from(new Set(existing.map(b => b.pathname)))
+    await deleteObjectsByPath(uniquePaths)
+    return NextResponse.json({ ok: true, deleted: uniquePaths.length })
   } catch (e) {
     console.error('[results/upload DELETE]', e)
     return NextResponse.json(
-      { ok: false, message: 'Nie udalo sie usunac pliku z Vercel Blob.' },
+      { ok: false, message: 'Nie udalo sie usunac pliku z Cloudflare R2.' },
       { status: 500 },
     )
   }

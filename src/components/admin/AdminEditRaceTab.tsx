@@ -368,7 +368,7 @@ const AdminEditRaceTab = forwardRef<AdminEditRaceTabHandle>(function AdminEditRa
         setCategories(nextCats)
         setStartWaves(nextWaves)
         setRegulationMeta({
-          url: raceDetail.regulation_blob_url ?? '',
+          url: raceDetail.regulation_file_url ?? '',
           fileName: raceDetail.regulation_file_name ?? '',
           uploadedAt: raceDetail.regulation_uploaded_at ?? '',
         })
@@ -760,7 +760,7 @@ const AdminEditRaceTab = forwardRef<AdminEditRaceTabHandle>(function AdminEditRa
               if (detailSnap.current) {
                 detailSnap.current = {
                   ...detailSnap.current,
-                  regulation_blob_url: meta.url,
+                  regulation_file_url: meta.url,
                   regulation_file_name: meta.fileName,
                   regulation_uploaded_at: meta.uploadedAt,
                 }
@@ -771,7 +771,7 @@ const AdminEditRaceTab = forwardRef<AdminEditRaceTabHandle>(function AdminEditRa
               if (detailSnap.current) {
                 detailSnap.current = {
                   ...detailSnap.current,
-                  regulation_blob_url: '',
+                  regulation_file_url: '',
                   regulation_file_name: '',
                   regulation_uploaded_at: '',
                 }

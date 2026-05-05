@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { del, list } from '@vercel/blob'
+import { deleteObjectsByPath, hasObjectStoreConfig, listObjects } from '@/lib/objectStore'
 import { getAuthUserFromRequest } from '@/lib/serverAuth'
 import { getRaceResultsPdfContext } from '@/lib/raceDb'
 import { getResultsBlobPrefixCandidates, parseResultBlobPathname, resultsBlobSlugSegment } from '@/lib/results'
@@ -8,10 +8,10 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 async function listAllBlobsWithPrefix(prefix: string) {
-  const out: Awaited<ReturnType<typeof list>>['blobs'] = []
+  const out: Awaited<ReturnType<typeof listObjects>>['blobs'] = []
   let cursor: string | undefined
   for (;;) {
-    const batch = await list({ prefix, cursor })
+    const batch = await listObjects({ prefix, cursor })
     out.push(...batch.blobs)
     if (!batch.hasMore || !batch.cursor) break
     cursor = batch.cursor
@@ -25,9 +25,9 @@ export async function DELETE(req: NextRequest, ctx: { params: { id: string } | P
     return NextResponse.json({ ok: false, message: 'Brak dostępu.' }, { status: 403 })
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
+  if (!hasObjectStoreConfig()) {
     return NextResponse.json(
-      { ok: false, message: 'Brak BLOB_READ_WRITE_TOKEN. Skonfiguruj Vercel Blob.' },
+      { ok: false, message: 'Brak konfiguracji R2. Uzupełnij zmienne R2_*.' },
       { status: 500 },
     )
   }
@@ -65,7 +65,7 @@ export async function DELETE(req: NextRequest, ctx: { params: { id: string } | P
   }
 
   try {
-    await del(toDelete.map(b => b.url))
+    await deleteObjectsByPath(toDelete.map(b => b.pathname))
     return NextResponse.json({ ok: true, deleted: toDelete.length })
   } catch (e) {
     console.error('[admin/races/[id]/results DELETE]', e)

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { list } from '@vercel/blob'
+import { hasObjectStoreConfig, listObjects } from '@/lib/objectStore'
 import { getAuthUserFromRequest } from '@/lib/serverAuth'
 import { getRaceResultsPdfContext, updateRaceResultsPdfSlotMode, type ResultsPdfSlotMode } from '@/lib/raceDb'
 import { getResultsBlobPrefixCandidates, parseResultBlobPathname, resultsBlobSlugSegment } from '@/lib/results'
@@ -8,10 +8,10 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 async function listAllBlobsWithPrefix(prefix: string) {
-  const out: Awaited<ReturnType<typeof list>>['blobs'] = []
+  const out: Awaited<ReturnType<typeof listObjects>>['blobs'] = []
   let cursor: string | undefined
   for (;;) {
-    const batch = await list({ prefix, cursor })
+    const batch = await listObjects({ prefix, cursor })
     out.push(...batch.blobs)
     if (!batch.hasMore || !batch.cursor) break
     cursor = batch.cursor
@@ -67,12 +67,12 @@ export async function PATCH(req: NextRequest, ctx: { params: { id: string } | Pr
     return NextResponse.json({ ok: false, message: 'Nie znaleziono wyścigu.' }, { status: 404 })
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
+  if (!hasObjectStoreConfig()) {
     return NextResponse.json(
       {
         ok: false,
         message:
-          'Brak BLOB_READ_WRITE_TOKEN — nie można zweryfikować, czy są już wgrane wyniki. Uzupełnij token i spróbuj ponownie.',
+          'Brak konfiguracji R2 — nie można zweryfikować, czy są już wgrane wyniki. Uzupełnij zmienne R2_* i spróbuj ponownie.',
       },
       { status: 503 },
     )

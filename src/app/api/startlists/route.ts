@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { list } from '@vercel/blob'
+import { listObjects } from '@/lib/objectStore'
 import { getRaceResultsPdfContext, isAllowedResultsRaceId } from '@/lib/raceDb'
 import { safeStartlistUploadFileName, startlistsForRaceBlobPrefix } from '@/lib/startlists'
 
@@ -7,10 +7,10 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 async function listAllBlobsWithPrefix(prefix: string) {
-  const out: Awaited<ReturnType<typeof list>>['blobs'] = []
+  const out: Awaited<ReturnType<typeof listObjects>>['blobs'] = []
   let cursor: string | undefined
   for (;;) {
-    const batch = await list({ prefix, cursor })
+    const batch = await listObjects({ prefix, cursor })
     out.push(...batch.blobs)
     if (!batch.hasMore || !batch.cursor) break
     cursor = batch.cursor

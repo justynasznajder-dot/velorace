@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { list } from '@vercel/blob'
+import { hasObjectStoreConfig, listObjects } from '@/lib/objectStore'
 import { getDefaultResultsRaceId, getRaceResultsPdfContext, isAllowedResultsRaceId } from '@/lib/raceDb'
 import {
   RESULT_CATEGORY_POSITIONS,
@@ -20,10 +20,10 @@ function decodeBlobFileName(segment: string) {
 }
 
 async function listAllBlobsWithPrefix(prefix: string) {
-  const out: Awaited<ReturnType<typeof list>>['blobs'] = []
+  const out: Awaited<ReturnType<typeof listObjects>>['blobs'] = []
   let cursor: string | undefined
   for (;;) {
-    const batch = await list({ prefix, cursor })
+    const batch = await listObjects({ prefix, cursor })
     out.push(...batch.blobs)
     if (!batch.hasMore || !batch.cursor) break
     cursor = batch.cursor
@@ -48,13 +48,13 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
+  if (!hasObjectStoreConfig()) {
     const urls = emptySlots(5)
     return NextResponse.json(
       {
         ok: false,
         message:
-          'Serwer nie ma BLOB_READ_WRITE_TOKEN — nie można odczytać listy plików z Vercel Blob. Dodaj token do .env.local (lokalnie) lub zmiennych projektu na Vercel.',
+          'Serwer nie ma kompletnej konfiguracji R2 — nie można odczytać listy plików. Uzupełnij zmienne R2_*.',
         urls,
         downloadUrls: urls,
         fileNames: urls,
@@ -159,8 +159,7 @@ export async function GET(req: NextRequest) {
   } catch (e) {
     console.error('[api/results]', e)
     const urls = emptySlots(5)
-    const message =
-      e instanceof Error ? e.message : 'Nie udało się pobrać listy plików z Vercel Blob (list).'
+    const message = e instanceof Error ? e.message : 'Nie udało się pobrać listy plików z Cloudflare R2.'
     return NextResponse.json(
       { ok: false, message, urls, downloadUrls: urls, fileNames: urls, raceId },
       { status: 500 },

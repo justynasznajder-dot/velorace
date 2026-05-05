@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { del, list, put } from '@vercel/blob'
+import { deleteObjectsByPath, hasObjectStoreConfig, listObjects, putObject } from '@/lib/objectStore'
 import { getAuthUserFromRequest } from '@/lib/serverAuth'
 import { getRaceResultsPdfContext, isAllowedResultsRaceId } from '@/lib/raceDb'
 import { safeStartlistUploadFileName, startlistBlobPrefix } from '@/lib/startlists'
@@ -10,10 +10,10 @@ export const dynamic = 'force-dynamic'
 const MAX_BYTES = 25 * 1024 * 1024
 
 async function listAllBlobsWithPrefix(prefix: string) {
-  const out: Awaited<ReturnType<typeof list>>['blobs'] = []
+  const out: Awaited<ReturnType<typeof listObjects>>['blobs'] = []
   let cursor: string | undefined
   for (;;) {
-    const batch = await list({ prefix, cursor })
+    const batch = await listObjects({ prefix, cursor })
     out.push(...batch.blobs)
     if (!batch.hasMore || !batch.cursor) break
     cursor = batch.cursor
@@ -31,8 +31,8 @@ export async function POST(req: NextRequest, ctx: { params: { id: string } | Pro
     return NextResponse.json({ ok: false, message: 'Brak dostępu.' }, { status: 403 })
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
-    return NextResponse.json({ ok: false, message: 'Brak BLOB_READ_WRITE_TOKEN. Skonfiguruj Vercel Blob.' }, { status: 500 })
+  if (!hasObjectStoreConfig()) {
+    return NextResponse.json({ ok: false, message: 'Brak konfiguracji R2. Uzupełnij zmienne R2_*.' }, { status: 500 })
   }
 
   const resolved = ctx.params instanceof Promise ? await ctx.params : ctx.params
@@ -77,16 +77,11 @@ export async function POST(req: NextRequest, ctx: { params: { id: string } | Pro
   try {
     const existing = await listAllBlobsWithPrefix(folderPrefix)
     if (existing.length > 0) {
-      await del(existing.map(b => b.url))
+      await deleteObjectsByPath(existing.map(b => b.pathname))
     }
 
     const pathname = `${folderPrefix}${safeName}`
-    const blob = await put(pathname, file, {
-      access: 'public',
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: 'application/pdf',
-    })
+    const blob = await putObject(pathname, file, { contentType: 'application/pdf' })
 
     const publicUrl = blob.downloadUrl || blob.url
 
@@ -108,8 +103,8 @@ export async function DELETE(req: NextRequest, ctx: { params: { id: string } | P
     return NextResponse.json({ ok: false, message: 'Brak dostępu.' }, { status: 403 })
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
-    return NextResponse.json({ ok: false, message: 'Brak BLOB_READ_WRITE_TOKEN. Skonfiguruj Vercel Blob.' }, { status: 500 })
+  if (!hasObjectStoreConfig()) {
+    return NextResponse.json({ ok: false, message: 'Brak konfiguracji R2. Uzupełnij zmienne R2_*.' }, { status: 500 })
   }
 
   const resolved = ctx.params instanceof Promise ? await ctx.params : ctx.params
@@ -134,7 +129,7 @@ export async function DELETE(req: NextRequest, ctx: { params: { id: string } | P
   try {
     const existing = await listAllBlobsWithPrefix(folderPrefix)
     if (existing.length === 0) return NextResponse.json({ ok: true, deleted: 0 })
-    await del(existing.map(b => b.url))
+    await deleteObjectsByPath(existing.map(b => b.pathname))
     return NextResponse.json({ ok: true, deleted: existing.length })
   } catch (e) {
     console.error('[startlists/upload DELETE]', e)

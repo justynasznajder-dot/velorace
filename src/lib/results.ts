@@ -1,6 +1,6 @@
 import { RACES } from '@/lib/data'
 
-/** Pozycje kategorii w widoku wyników (1–5) — folder w Blob: `{root}/{raceId}/{position}/...` */
+/** Pozycje kategorii w widoku wyników (1–5) — folder storage: `{root}/{raceId}/{position}/...` */
 export const RESULT_CATEGORY_POSITIONS = [1, 2, 3, 4, 5] as const
 export type ResultCategoryPosition = (typeof RESULT_CATEGORY_POSITIONS)[number]
 
@@ -35,7 +35,7 @@ export function resultCategoryPrefix(raceId: string, position: number, year?: nu
 
 export type ResultsPdfSlotMode = 'category' | 'wave'
 
-/** Segment ścieżki Vercel Blob: `{root}/{segment}/kategoria/...` — bez ukośników. */
+/** Segment ścieżki storage: `{root}/{segment}/kategoria/...` — bez ukośników. */
 export function resultsBlobSlugSegment(slug: string): string {
   const t = slug.trim().replace(/\/+/g, '-').replace(/^\.+/, '')
   return t || 'race'

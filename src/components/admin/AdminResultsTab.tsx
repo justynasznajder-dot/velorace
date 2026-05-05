@@ -296,7 +296,7 @@ const AdminResultsTab = forwardRef<AdminResultsTabHandle>(function AdminResultsT
           <>
             <p className={styles.intro}>
               Wgraj pliki PDF wyników dla każdego slotu zdefiniowanego w wyścigu. Gdy są kategorie lub fale startu,
-              pliki trafiają do Vercel Blob pod <code>wyscigi_{'{rok}'}/{'{slug}'}/kategoria/…</code> lub{' '}
+              pliki trafiają do Cloudflare R2 pod <code>wyscigi_{'{rok}'}/{'{slug}'}/kategoria/…</code> lub{' '}
               <code>wyscigi_{'{rok}'}/{'{slug}'}/fala/…</code> (zależnie od trybu). Bez kategorii i fal używana jest ścieżka
               legacy (folder po UUID wyścigu). Ponowne wgranie zastępuje plik w danym slocie.
             </p>

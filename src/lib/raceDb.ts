@@ -81,7 +81,7 @@ function rowToRace(row: Record<string, unknown>): Race {
     lapCount: lapCount != null && Number.isFinite(lapCount) ? lapCount : undefined,
     lapsDistanceKm: lapsDistanceKm != null && Number.isFinite(lapsDistanceKm) ? lapsDistanceKm : undefined,
     entryFeePln: entryFeePln != null && Number.isFinite(entryFeePln) ? entryFeePln : undefined,
-    regulationUrl: row.regulation_blob_url != null ? String(row.regulation_blob_url) : undefined,
+    regulationUrl: row.regulation_file_url != null ? String(row.regulation_file_url) : undefined,
   }
 }
 
@@ -107,7 +107,7 @@ export async function listRacesFromDatabase(): Promise<Race[]> {
       COALESCE(fc.claps, r.lap_count) AS lap_count,
       COALESCE(fc.clapsdist, r.laps_distance_km) AS laps_distance_km,
       COALESCE(fc.cfee, r.entry_fee_pln) AS entry_fee_pln,
-      r.regulation_blob_url,
+      r.regulation_file_url,
       0::int AS spots_taken
     FROM races r
     LEFT JOIN LATERAL (
@@ -167,7 +167,7 @@ export async function listHomePageRacesCurrentYear(): Promise<Race[]> {
         COALESCE(fc.claps, r.lap_count) AS lap_count,
         COALESCE(fc.clapsdist, r.laps_distance_km) AS laps_distance_km,
         COALESCE(fc.cfee, r.entry_fee_pln) AS entry_fee_pln,
-        r.regulation_blob_url,
+        r.regulation_file_url,
         0::int AS spots_taken
       FROM races r
       LEFT JOIN LATERAL (
@@ -218,7 +218,7 @@ export async function listHomePageFinishedRacesCurrentYear(): Promise<Race[]> {
         COALESCE(fc.claps, r.lap_count) AS lap_count,
         COALESCE(fc.clapsdist, r.laps_distance_km) AS laps_distance_km,
         COALESCE(fc.cfee, r.entry_fee_pln) AS entry_fee_pln,
-        r.regulation_blob_url,
+        r.regulation_file_url,
         0::int AS spots_taken
       FROM races r
       LEFT JOIN LATERAL (
@@ -273,7 +273,7 @@ export async function getRaceByIdFromDatabase(raceId: string): Promise<Race | nu
       COALESCE(fc.claps, r.lap_count) AS lap_count,
       COALESCE(fc.clapsdist, r.laps_distance_km) AS laps_distance_km,
       COALESCE(fc.cfee, r.entry_fee_pln) AS entry_fee_pln,
-      r.regulation_blob_url,
+      r.regulation_file_url,
       0::int AS spots_taken
     FROM races r
     LEFT JOIN LATERAL (
@@ -1005,7 +1005,7 @@ export type AdminRaceEditDetail = {
   registration_closes: string
   gpx_url: string
   cover_image_url: string
-  regulation_blob_url: string
+  regulation_file_url: string
   regulation_file_name: string
   regulation_uploaded_at: string
   categories: (AdminRaceCategoryInput & { id: string })[]
@@ -1044,7 +1044,7 @@ export async function getAdminRaceForEdit(raceId: string): Promise<AdminRaceEdit
       r.registration_closes,
       COALESCE(r.gpx_url, '') AS gpx_url,
       COALESCE(r.cover_image_url, '') AS cover_image_url,
-      COALESCE(r.regulation_blob_url, '') AS regulation_blob_url,
+      COALESCE(r.regulation_file_url, '') AS regulation_file_url,
       COALESCE(r.regulation_file_name, '') AS regulation_file_name,
       COALESCE(r.regulation_uploaded_at::text, '') AS regulation_uploaded_at
     FROM races r
@@ -1160,7 +1160,7 @@ export async function getAdminRaceForEdit(raceId: string): Promise<AdminRaceEdit
     registration_closes: formatTsForDatetimeLocal(rr.registration_closes),
     gpx_url: String(rr.gpx_url ?? ''),
     cover_image_url: String(rr.cover_image_url ?? ''),
-    regulation_blob_url: String(rr.regulation_blob_url ?? ''),
+    regulation_file_url: String(rr.regulation_file_url ?? ''),
     regulation_file_name: String(rr.regulation_file_name ?? ''),
     regulation_uploaded_at: String(rr.regulation_uploaded_at ?? ''),
     categories,

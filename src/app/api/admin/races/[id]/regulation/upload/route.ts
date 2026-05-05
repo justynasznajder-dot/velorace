@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { del, list, put } from '@vercel/blob'
+import { deleteObjectsByPath, hasObjectStoreConfig, listObjects, putObject } from '@/lib/objectStore'
 import { getAuthUserFromRequest } from '@/lib/serverAuth'
 import { getDb } from '@/lib/db'
 import { getRaceResultsPdfContext } from '@/lib/raceDb'
@@ -11,10 +11,10 @@ export const dynamic = 'force-dynamic'
 const MAX_BYTES = 25 * 1024 * 1024
 
 async function listAllBlobsWithPrefix(prefix: string) {
-  const out: Awaited<ReturnType<typeof list>>['blobs'] = []
+  const out: Awaited<ReturnType<typeof listObjects>>['blobs'] = []
   let cursor: string | undefined
   for (;;) {
-    const batch = await list({ prefix, cursor })
+    const batch = await listObjects({ prefix, cursor })
     out.push(...batch.blobs)
     if (!batch.hasMore || !batch.cursor) break
     cursor = batch.cursor
@@ -28,9 +28,9 @@ export async function POST(req: NextRequest, ctx: { params: { id: string } | Pro
     return NextResponse.json({ ok: false, message: 'Brak dostępu.' }, { status: 403 })
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
+  if (!hasObjectStoreConfig()) {
     return NextResponse.json(
-      { ok: false, message: 'Brak BLOB_READ_WRITE_TOKEN. Skonfiguruj Vercel Blob.' },
+      { ok: false, message: 'Brak konfiguracji R2. Uzupełnij zmienne R2_*.' },
       { status: 500 },
     )
   }
@@ -71,16 +71,11 @@ export async function POST(req: NextRequest, ctx: { params: { id: string } | Pro
   try {
     const existing = await listAllBlobsWithPrefix(prefix)
     if (existing.length > 0) {
-      await del(existing.map(b => b.url))
+      await deleteObjectsByPath(existing.map(b => b.pathname))
     }
 
     const pathname = `${prefix}${originalName}`
-    const blob = await put(pathname, file, {
-      access: 'public',
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: 'application/pdf',
-    })
+    const blob = await putObject(pathname, file, { contentType: 'application/pdf' })
     const publicUrl = blob.downloadUrl || blob.url
 
     const sql = getDb()
@@ -90,8 +85,8 @@ export async function POST(req: NextRequest, ctx: { params: { id: string } | Pro
     await sql`
       UPDATE races
       SET
-        regulation_blob_path = ${blob.pathname},
-        regulation_blob_url = ${publicUrl},
+        regulation_storage_path = ${blob.pathname},
+        regulation_file_url = ${publicUrl},
         regulation_file_name = ${originalName},
         regulation_uploaded_at = NOW(),
         updated_at = NOW()
@@ -136,15 +131,15 @@ export async function DELETE(req: NextRequest, ctx: { params: { id: string } | P
     // Czyścimy cały folder regulaminu dla wyścigu (0 lub 1 plik).
     const prefix = regulationPdfBlobPrefix(raceCtx.slug, raceCtx.raceYear)
     const existing = await listAllBlobsWithPrefix(prefix)
-    if (existing.length > 0 && process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
-      await del(existing.map(b => b.url))
+    if (existing.length > 0 && hasObjectStoreConfig()) {
+      await deleteObjectsByPath(existing.map(b => b.pathname))
     }
 
     await sql`
       UPDATE races
       SET
-        regulation_blob_path = NULL,
-        regulation_blob_url = NULL,
+        regulation_storage_path = NULL,
+        regulation_file_url = NULL,
         regulation_file_name = NULL,
         regulation_uploaded_at = NULL,
         updated_at = NOW()
