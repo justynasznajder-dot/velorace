@@ -802,6 +802,7 @@ const AdminEditRaceTab = forwardRef<AdminEditRaceTabHandle>(function AdminEditRa
             submitting={submitting}
             invalidCategoryKeys={invalidCategoryKeys}
             categoryRequiredError={categoryRequiredError}
+            raceId={editingId}
           />
 
           <AdminFeedbackToast message={message} onDismiss={() => setMessage(null)} />

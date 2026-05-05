@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import AdminRaceForm from '@/components/admin/AdminRaceForm'
 import {
   emptyCategoryRow,
@@ -36,6 +36,35 @@ export default function AdminAddRaceTab() {
   const [invalidCategoryKeys, setInvalidCategoryKeys] = useState<string[]>([])
   const [categoryRequiredError, setCategoryRequiredError] = useState(false)
   const [createdRaceForRegulation, setCreatedRaceForRegulation] = useState<{ id: string; name: string } | null>(null)
+  const [startlistQueueByCategoryKey, setStartlistQueueByCategoryKey] = useState<
+    Record<string, { file: File; fileName: string } | undefined>
+  >({})
+  const [resetAfterStartlistUploads, setResetAfterStartlistUploads] = useState(false)
+
+  const onStartlistQueueChange = useCallback(
+    (categoryKey: string, next: { file: File; fileName: string } | null) => {
+      setStartlistQueueByCategoryKey(prev => {
+        const copy = { ...prev }
+        if (!next) delete copy[categoryKey]
+        else copy[categoryKey] = next
+        return copy
+      })
+    },
+    [],
+  )
+
+  useEffect(() => {
+    if (!resetAfterStartlistUploads) return
+    const hasQueued = Object.keys(startlistQueueByCategoryKey).length > 0
+    if (hasQueued) return
+
+    setResetAfterStartlistUploads(false)
+    setForm(initialRaceForm())
+    setCategories([])
+    setStartWaves([])
+    setInvalidCategoryKeys([])
+    setCategoryRequiredError(false)
+  }, [resetAfterStartlistUploads, startlistQueueByCategoryKey])
 
   const setField = useCallback((key: keyof RaceFormState, value: string) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -251,6 +280,7 @@ export default function AdminAddRaceTab() {
         body: JSON.stringify(body),
       })
       const data = (await res.json()) as { ok?: boolean; message?: string; slug?: string; id?: string }
+      const categoryIds = (data as { categoryIds?: string[] }).categoryIds ?? []
 
       if (!res.ok || !data.ok) {
         setMessage({ type: 'err', text: data.message || `Błąd (${res.status})` })
@@ -261,13 +291,32 @@ export default function AdminAddRaceTab() {
         type: 'ok',
         text: data.message || `Zapisano (slug: ${data.slug ?? '—'}).`,
       })
-      setCreatedRaceForRegulation(data?.id ? { id: data.id, name: form.name.trim() } : null)
+
+      const nextRaceId = data?.id ?? null
+      setCreatedRaceForRegulation(nextRaceId ? { id: nextRaceId, name: form.name.trim() } : null)
       scrollRaceFormToTop()
-      setForm(initialRaceForm())
-      setCategories([])
-      setStartWaves([])
-      setInvalidCategoryKeys([])
-      setCategoryRequiredError(false)
+
+      const hasQueuedStartlists = Object.keys(startlistQueueByCategoryKey).length > 0
+      if (hasQueuedStartlists && nextRaceId && categoryIds.length > 0) {
+        // Żeby auto-upload mógł się wykonać, zostawiamy kategorie/akordeon aż do zakończenia wysyłki.
+        setCategories(prev =>
+          prev.map((c, idx) => ({
+            ...c,
+            dbId: categoryIds[idx] ?? c.dbId,
+          })),
+        )
+        setResetAfterStartlistUploads(true)
+        // Reset pól formularza (kategorie pozostają do momentu uploadu).
+        setForm(initialRaceForm())
+      } else {
+        setForm(initialRaceForm())
+        setCategories([])
+        setStartWaves([])
+        setInvalidCategoryKeys([])
+        setCategoryRequiredError(false)
+        setStartlistQueueByCategoryKey({})
+        setResetAfterStartlistUploads(false)
+      }
     } catch {
       setMessage({ type: 'err', text: 'Brak połączenia z serwerem.' })
     } finally {
@@ -305,6 +354,9 @@ export default function AdminAddRaceTab() {
         submitting={submitting}
         invalidCategoryKeys={invalidCategoryKeys}
         categoryRequiredError={categoryRequiredError}
+        raceId={createdRaceForRegulation?.id ?? null}
+        startlistQueueByCategoryKey={startlistQueueByCategoryKey}
+        onStartlistQueueChange={onStartlistQueueChange}
       />
 
       <AdminFeedbackToast message={message} onDismiss={() => setMessage(null)} />

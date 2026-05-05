@@ -239,6 +239,7 @@ export async function listHomePageFinishedRacesCurrentYear(): Promise<Race[]> {
         AND (
           r.status = 'finished'::race_status
           OR r.status = 'cancelled'::race_status
+          OR r.race_date < CURRENT_DATE
         )
         AND r.status <> 'draft'::race_status
       ORDER BY r.race_date DESC, r.name ASC
@@ -503,7 +504,7 @@ export async function insertAdminRace(
   payload: AdminRaceInsertPayload,
   categories: AdminRaceCategoryInput[] = [],
   startWaves: AdminStartWaveInput[] = [],
-): Promise<{ id: string; slug: string }> {
+): Promise<{ id: string; slug: string; categoryIds: string[] }> {
   const sql = getDb()
   if (!sql) {
     throw new Error('Brak DATABASE_URL — skonfiguruj Neon i zmienne środowiskowe.')
@@ -664,8 +665,8 @@ export async function insertAdminRace(
       const row = rows[0] as { id: string; slug: string }
       newRaceId = row.id
 
+      let categoryIds: string[] = []
       try {
-        const categoryIds: string[] = []
         for (let ci = 0; ci < categories.length; ci++) {
           const c = categories[ci]
           const cname = c.name.trim()
@@ -748,7 +749,7 @@ export async function insertAdminRace(
       }
 
       invalidateRacesMergeCache()
-      return { id: row.id, slug: row.slug }
+      return { id: row.id, slug: row.slug, categoryIds }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       if (msg.includes('unique') || msg.includes('slug') || msg.includes('23505')) {

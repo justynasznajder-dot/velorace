@@ -1,6 +1,7 @@
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import RaceResultsDownloads from '@/components/results/RaceResultsDownloads'
+import RaceStartlistsSection from '@/components/results/RaceStartlistsSection'
 import { formatDate } from '@/lib/data'
 import { getRaceByIdFromDatabase, getRaceCategoryDetails, getRaceResultsPdfContext } from '@/lib/raceDb'
 import { getRaceTypeLabel } from '@/lib/raceDisplay'
@@ -37,6 +38,8 @@ export default async function RaceResultsPage({ params }: Props) {
     if (da !== db) return da - db
     return a.name.localeCompare(b.name, 'pl')
   })
+
+  const categoriesForStartlists = categoriesSortedByWave.map(c => ({ id: c.id, name: c.name }))
 
   return (
     <>
@@ -131,6 +134,7 @@ export default async function RaceResultsPage({ params }: Props) {
             <div className={styles.downloadsBody}>
               <RaceResultsDownloads raceId={race.id} />
             </div>
+            <RaceStartlistsSection raceId={race.id} categories={categoriesForStartlists} />
           </aside>
         </div>
       </main>

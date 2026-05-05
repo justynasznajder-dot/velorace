@@ -133,6 +133,7 @@ export async function POST(req: NextRequest) {
       ok: true,
       id: created.id,
       slug: created.slug,
+      categoryIds: created.categoryIds ?? [],
       message: hasCategories
         ? `Wyścig zapisany (${categories.length} ${categories.length === 1 ? 'kategoria' : 'kategorii'}). Organizator: Platforma VeloRace.`
         : 'Wyścig zapisany. Organizator: Platforma VeloRace.',
