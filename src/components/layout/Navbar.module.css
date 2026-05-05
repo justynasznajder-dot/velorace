@@ -271,6 +271,7 @@ a.userBadge:hover {
 @media (max-width: 900px) {
   .nav {
     padding: 0 16px;
+    overflow: visible;
   }
 
   .logo {

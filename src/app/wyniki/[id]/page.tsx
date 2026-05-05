@@ -3,7 +3,7 @@ import Footer from '@/components/layout/Footer'
 import RaceResultsDownloads from '@/components/results/RaceResultsDownloads'
 import { formatDate } from '@/lib/data'
 import { getRaceByIdFromDatabase, getRaceCategoryDetails, getRaceResultsPdfContext } from '@/lib/raceDb'
-import { formatEntryFeePln, getRaceTypeLabel } from '@/lib/raceDisplay'
+import { getRaceTypeLabel } from '@/lib/raceDisplay'
 import { notFound } from 'next/navigation'
 import styles from './page.module.css'
 
@@ -76,14 +76,6 @@ export default async function RaceResultsPage({ params }: Props) {
                 <span>Typ</span>
                 <span>{getRaceTypeLabel(race.type || race.category)}</span>
               </div>
-              <div className={styles.infoRow}>
-                <span>Dystans</span>
-                <span>{race.distance > 0 ? `${race.distance} km` : '—'}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span>Wpłata</span>
-                <span>{race.entryFeePln != null ? formatEntryFeePln(race.entryFeePln) : '—'}</span>
-              </div>
             </div>
             <div className={styles.extraInfo}>
               <div className={styles.extraBlock}>
@@ -97,8 +89,7 @@ export default async function RaceResultsPage({ params }: Props) {
                           <th>Dystans</th>
                           <th>Okrążenia</th>
                           <th>Dł. okrążenia</th>
-                          <th>Wpłata</th>
-                          <th>Fala</th>
+                          <th>Czas startu</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -108,7 +99,6 @@ export default async function RaceResultsPage({ params }: Props) {
                             <td>{cat.distanceKm != null ? `${cat.distanceKm} km` : '—'}</td>
                             <td>{cat.lapCount != null ? String(cat.lapCount) : '—'}</td>
                             <td>{cat.lapDistanceKm != null ? `${cat.lapDistanceKm} km` : '—'}</td>
-                            <td>{cat.entryFeePln != null ? formatEntryFeePln(cat.entryFeePln) : '—'}</td>
                             <td>{cat.waveStartTime ? cat.waveStartTime.slice(0, 5) : '—'}</td>
                           </tr>
                         ))}
@@ -120,7 +110,7 @@ export default async function RaceResultsPage({ params }: Props) {
                 )}
               </div>
               <div className={styles.extraBlock}>
-                <h3 className={styles.extraTitle}>Fale startu</h3>
+                <h3 className={styles.extraTitle}>Czasy startów kategorii</h3>
                 {pdfCtx?.waveSlots?.length ? (
                   <div className={styles.pills}>
                     {pdfCtx.waveSlots.map(slot => (
@@ -130,7 +120,7 @@ export default async function RaceResultsPage({ params }: Props) {
                     ))}
                   </div>
                 ) : (
-                  <p className={styles.compactHint}>Brak zdefiniowanych fal startu.</p>
+                  <p className={styles.compactHint}>Brak zdefiniowanych czasów startu.</p>
                 )}
               </div>
             </div>
