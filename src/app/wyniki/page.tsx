@@ -17,6 +17,15 @@ function raceYear(isoDate: string): number | null {
   return date.getFullYear()
 }
 
+function isRaceFinished(race: Race): boolean {
+  if (race.status === 'finished' || race.status === 'cancelled') return true
+  const date = new Date(race.date)
+  if (Number.isNaN(date.getTime())) return false
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return date < today
+}
+
 function StatusBadge({ status }: { status: Race['status'] }) {
   const map = {
     open: { label: 'Zapisy otwarte', cls: styles.tagOpen },
@@ -42,7 +51,23 @@ export default async function WynikiPage({ searchParams }: Props) {
 
   const racesInYear = allRaces
     .filter(r => raceYear(r.date) === selectedYear)
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.name.localeCompare(b.name, 'pl')))
+    .sort((a, b) => {
+      const aFinished = isRaceFinished(a)
+      const bFinished = isRaceFinished(b)
+      if (aFinished !== bFinished) return aFinished ? 1 : -1
+
+      // Aktywne/nadchodzące: najbliższy termin na górze.
+      if (!aFinished) {
+        if (a.date < b.date) return -1
+        if (a.date > b.date) return 1
+        return a.name.localeCompare(b.name, 'pl')
+      }
+
+      // Zakończone: na dole, od najnowszych zakończonych.
+      if (a.date < b.date) return 1
+      if (a.date > b.date) return -1
+      return a.name.localeCompare(b.name, 'pl')
+    })
 
   return (
     <>

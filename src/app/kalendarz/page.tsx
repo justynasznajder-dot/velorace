@@ -3,6 +3,8 @@ import Footer from '@/components/layout/Footer'
 import UpcomingRaces from '@/components/races/UpcomingRaces'
 import styles from '../wyniki/page.module.css'
 
+export const dynamic = 'force-dynamic'
+
 export default async function KalendarzPage() {
   return (
     <>

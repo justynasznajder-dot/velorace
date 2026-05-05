@@ -11,6 +11,8 @@ import CountdownWidget from '@/components/home/CountdownWidget'
 import { listHomePageRacesCurrentYear } from '@/lib/raceDb'
 import styles from './page.module.css'
 
+export const dynamic = 'force-dynamic'
+
 const HOME_SECTIONS_VISIBILITY = {
   notice: false,
   upcomingRaces: true,
