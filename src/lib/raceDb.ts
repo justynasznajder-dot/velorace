@@ -128,7 +128,7 @@ export async function listRacesFromDatabase(): Promise<Race[]> {
 
 /**
  * Wyścigi na stronę główną:
- * - tylko bieżący rok kalendarzowy
+ * - wszystkie lata
  * - tylko daty od dzisiaj (nadchodzące)
  * - bez statusu `draft`
  * - status mapowany do `RaceStatus` (open/soon/live/finished)
@@ -136,7 +136,6 @@ export async function listRacesFromDatabase(): Promise<Race[]> {
 export async function listHomePageRacesCurrentYear(): Promise<Race[]> {
   const sql = getDb()
   if (!sql) return []
-  const year = new Date().getFullYear()
 
   try {
     // Auto-zamykanie wyścigów po dacie: jeśli dzień wyścigu minął,
@@ -182,8 +181,7 @@ export async function listHomePageRacesCurrentYear(): Promise<Race[]> {
         ORDER BY rc.display_order NULLS LAST, rc.name NULLS LAST
         LIMIT 1
       ) fc ON true
-      WHERE EXTRACT(YEAR FROM r.race_date)::int = ${year}
-        AND r.race_date >= CURRENT_DATE
+      WHERE r.race_date >= CURRENT_DATE
         AND r.status <> 'draft'::race_status
         AND r.status <> 'finished'::race_status
         AND r.status <> 'cancelled'::race_status
@@ -196,11 +194,10 @@ export async function listHomePageRacesCurrentYear(): Promise<Race[]> {
   }
 }
 
-/** Zakończone wyścigi na stronie głównej (bieżący rok). */
+/** Zakończone wyścigi na stronie głównej (wszystkie lata). */
 export async function listHomePageFinishedRacesCurrentYear(): Promise<Race[]> {
   const sql = getDb()
   if (!sql) return []
-  const year = new Date().getFullYear()
 
   try {
     const rows = await sql`
@@ -235,8 +232,7 @@ export async function listHomePageFinishedRacesCurrentYear(): Promise<Race[]> {
         ORDER BY rc.display_order NULLS LAST, rc.name NULLS LAST
         LIMIT 1
       ) fc ON true
-      WHERE EXTRACT(YEAR FROM r.race_date)::int = ${year}
-        AND (
+      WHERE (
           r.status = 'finished'::race_status
           OR r.status = 'cancelled'::race_status
           OR r.race_date < CURRENT_DATE
