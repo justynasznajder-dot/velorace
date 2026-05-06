@@ -217,7 +217,7 @@ const AdminEditRaceTab = forwardRef<AdminEditRaceTabHandle>(function AdminEditRa
       if (aUpcoming && bUpcoming) {
         return a.race_date.localeCompare(b.race_date) || a.name.localeCompare(b.name)
       }
-      return b.race_date.localeCompare(a.race_date) || a.name.localeCompare(b.name)
+      return a.race_date.localeCompare(b.race_date) || a.name.localeCompare(b.name)
     })
   }, [list])
 

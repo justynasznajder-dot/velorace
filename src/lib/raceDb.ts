@@ -247,7 +247,7 @@ export async function listHomePageFinishedRacesCurrentYear(): Promise<Race[]> {
           OR r.race_date < CURRENT_DATE
         )
         AND r.status <> 'draft'::race_status
-      ORDER BY r.race_date DESC, r.name ASC
+      ORDER BY r.race_date ASC, r.name ASC
     `
     return (rows as Record<string, unknown>[]).map(rowToRace)
   } catch (e) {

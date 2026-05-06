@@ -271,7 +271,7 @@ const AdminResultsTab = forwardRef<AdminResultsTabHandle>(function AdminResultsT
       if (aUpcoming && bUpcoming) {
         return raceDateSortValue(a.race_date) - raceDateSortValue(b.race_date) || a.name.localeCompare(b.name)
       }
-      return raceDateSortValue(b.race_date) - raceDateSortValue(a.race_date) || a.name.localeCompare(b.name)
+      return raceDateSortValue(a.race_date) - raceDateSortValue(b.race_date) || a.name.localeCompare(b.name)
     })
   }, [races])
 
