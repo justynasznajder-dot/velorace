@@ -39,6 +39,55 @@ function StatusBadge({ status }: { status: Race['status'] }) {
   return <span className={`${styles.tag} ${cls}`}>{label}</span>
 }
 
+function sortByDateAsc(a: Race, b: Race): number {
+  if (a.date < b.date) return -1
+  if (a.date > b.date) return 1
+  return a.name.localeCompare(b.name, 'pl')
+}
+
+function RaceCard({ race }: { race: Race }) {
+  const { day, month, full } = formatDate(race.date)
+  return (
+    <details key={race.id} className={styles.raceCard}>
+      <summary className={styles.raceCardHeader}>
+        <div className={styles.dateBlock}>
+          <div className={styles.day}>{day}</div>
+          <div className={styles.month}>{month}</div>
+        </div>
+
+        <div className={styles.info}>
+          <h2 className={styles.raceName}>{race.name}</h2>
+          <div className={styles.raceMeta}>
+            <span>📅 {full}</span>
+            <span>📍 {race.city}</span>
+          </div>
+          <div className={styles.tags}>
+            <StatusBadge status={race.status} />
+            <span className={`${styles.tag} ${styles.tagCat}`}>{getRaceTypeLabel(race.type || race.category)}</span>
+          </div>
+        </div>
+
+        <div className={styles.raceActions}>
+          <a href={`/wyniki/${race.id}`} className={styles.raceActionLink}>
+            Zobacz szczegóły wyścigu
+          </a>
+          <div className={styles.raceActionRow}>
+            <span className={styles.raceActionLink}>
+              Zobacz wyniki
+            </span>
+            <span className={styles.expandIcon} aria-hidden="true">
+              ▾
+            </span>
+          </div>
+        </div>
+      </summary>
+      <div className={styles.raceCardBody}>
+        <RaceResultsDownloads raceId={race.id} />
+      </div>
+    </details>
+  )
+}
+
 export default async function WynikiPage({ searchParams }: Props) {
   const allRaces = await listRacesMerged()
   const years = Array.from(new Set(allRaces.map(r => raceYear(r.date)).filter((y): y is number => y != null))).sort(
@@ -49,25 +98,9 @@ export default async function WynikiPage({ searchParams }: Props) {
   const currentYear = new Date().getFullYear()
   const selectedYear = years.includes(requestedYear) ? requestedYear : (years.includes(currentYear) ? currentYear : years[0])
 
-  const racesInYear = allRaces
-    .filter(r => raceYear(r.date) === selectedYear)
-    .sort((a, b) => {
-      const aFinished = isRaceFinished(a)
-      const bFinished = isRaceFinished(b)
-      if (aFinished !== bFinished) return aFinished ? 1 : -1
-
-      // Aktywne/nadchodzące: najbliższy termin na górze.
-      if (!aFinished) {
-        if (a.date < b.date) return -1
-        if (a.date > b.date) return 1
-        return a.name.localeCompare(b.name, 'pl')
-      }
-
-      // Zakończone: na dole, od najnowszych zakończonych.
-      if (a.date < b.date) return 1
-      if (a.date > b.date) return -1
-      return a.name.localeCompare(b.name, 'pl')
-    })
+  const racesInYear = allRaces.filter(r => raceYear(r.date) === selectedYear)
+  const upcomingRaces = racesInYear.filter(r => !isRaceFinished(r)).sort(sortByDateAsc)
+  const finishedRaces = racesInYear.filter(isRaceFinished).sort(sortByDateAsc)
 
   return (
     <>
@@ -92,48 +125,25 @@ export default async function WynikiPage({ searchParams }: Props) {
         {racesInYear.length === 0 ? (
           <p className={styles.emptyState}>Brak wyścigów z opublikowanymi wynikami dla wybranego roku.</p>
         ) : (
-          racesInYear.map(race => {
-            const { day, month, full } = formatDate(race.date)
-            return (
-              <details key={race.id} className={styles.raceCard}>
-                <summary className={styles.raceCardHeader}>
-                  <div className={styles.dateBlock}>
-                    <div className={styles.day}>{day}</div>
-                    <div className={styles.month}>{month}</div>
-                  </div>
+          <>
+            <section className={styles.resultsSection}>
+              <h2 className={styles.sectionTitle}>Wyścigi nadchodzące</h2>
+              {upcomingRaces.length === 0 ? (
+                <p className={styles.emptyState}>Brak nadchodzących wyścigów w wybranym roku.</p>
+              ) : (
+                upcomingRaces.map(race => <RaceCard key={race.id} race={race} />)
+              )}
+            </section>
 
-                  <div className={styles.info}>
-                    <h2 className={styles.raceName}>{race.name}</h2>
-                    <div className={styles.raceMeta}>
-                      <span>📅 {full}</span>
-                      <span>📍 {race.city}</span>
-                    </div>
-                    <div className={styles.tags}>
-                      <StatusBadge status={race.status} />
-                      <span className={`${styles.tag} ${styles.tagCat}`}>{getRaceTypeLabel(race.type || race.category)}</span>
-                    </div>
-                  </div>
-
-                  <div className={styles.raceActions}>
-                    <a href={`/wyniki/${race.id}`} className={styles.raceActionLink}>
-                      Zobacz szczegóły wyścigu
-                    </a>
-                    <div className={styles.raceActionRow}>
-                      <span className={styles.raceActionLink}>
-                        Zobacz wyniki
-                      </span>
-                      <span className={styles.expandIcon} aria-hidden="true">
-                        ▾
-                      </span>
-                    </div>
-                  </div>
-                </summary>
-                <div className={styles.raceCardBody}>
-                  <RaceResultsDownloads raceId={race.id} />
-                </div>
-              </details>
-            )
-          })
+            <section className={styles.resultsSection}>
+              <h2 className={styles.sectionTitle}>Wyścigi zakończone</h2>
+              {finishedRaces.length === 0 ? (
+                <p className={styles.emptyState}>Brak zakończonych wyścigów w wybranym roku.</p>
+              ) : (
+                finishedRaces.map(race => <RaceCard key={race.id} race={race} />)
+              )}
+            </section>
+          </>
         )}
       </main>
       <Footer />
