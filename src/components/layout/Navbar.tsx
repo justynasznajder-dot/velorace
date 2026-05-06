@@ -6,11 +6,13 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
 import styles from './Navbar.module.css'
 
+const SHOW_LIVE_SECTION = false
+
 const NAV_LINKS = [
   { label: 'Strona główna', href: '/' },
   { label: 'Wyniki',        href: '/wyniki' },
   { label: 'Kalendarz',     href: '/kalendarz' },
-  { label: 'Live',          href: '/live', isLive: true },
+  { label: 'Live',          href: '/live', isLive: true, hidden: !SHOW_LIVE_SECTION },
   { label: 'Kontakt',       href: '/kontakt' },
 ]
 
@@ -35,7 +37,7 @@ export default function Navbar() {
       </Link>
 
       <div className={styles.links}>
-        {NAV_LINKS.map(link => (
+        {NAV_LINKS.filter(link => !link.hidden).map(link => (
           <Link
             key={link.href}
             href={link.href}
@@ -87,7 +89,7 @@ export default function Navbar() {
 
       {menuOpen && (
         <div className={styles.mobilePanel}>
-          {NAV_LINKS.map(link => (
+          {NAV_LINKS.filter(link => !link.hidden).map(link => (
             <Link
               key={link.href}
               href={link.href}

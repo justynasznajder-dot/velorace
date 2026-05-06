@@ -138,17 +138,6 @@ export async function listHomePageRacesCurrentYear(): Promise<Race[]> {
   if (!sql) return []
 
   try {
-    // Auto-zamykanie wyścigów po dacie: jeśli dzień wyścigu minął,
-    // status przechodzi na `finished` (z wyjątkiem już zakończonych/anulowanych).
-    await sql`
-      UPDATE races
-      SET status = 'finished'::race_status, updated_at = NOW()
-      WHERE race_date < CURRENT_DATE
-        AND status <> 'finished'::race_status
-        AND status <> 'cancelled'::race_status
-    `
-    invalidateRacesMergeCache()
-
     const rows = await sql`
       SELECT
         r.id::text AS id,
