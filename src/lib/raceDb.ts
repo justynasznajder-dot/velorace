@@ -38,6 +38,17 @@ export function invalidateRacesMergeCache() {
   mergeCache = null
 }
 
+async function autoMarkPastRacesFinished(sql: ReturnType<typeof getDb>): Promise<void> {
+  if (!sql) return
+  await sql`
+    UPDATE races
+    SET status = 'finished'::race_status, updated_at = NOW()
+    WHERE race_date < CURRENT_DATE
+      AND status <> 'finished'::race_status
+      AND status <> 'cancelled'::race_status
+  `
+}
+
 function mapDbStatusToApp(db: string): RaceStatus {
   switch (db) {
     case 'registration_open':
@@ -89,6 +100,9 @@ export async function listRacesFromDatabase(): Promise<Race[]> {
   const sql = getDb()
   if (!sql) return []
 
+  await autoMarkPastRacesFinished(sql)
+  invalidateRacesMergeCache()
+
   const rows = await sql`
     SELECT
       r.id::text AS id,
@@ -138,6 +152,9 @@ export async function listHomePageRacesCurrentYear(): Promise<Race[]> {
   if (!sql) return []
 
   try {
+    await autoMarkPastRacesFinished(sql)
+    invalidateRacesMergeCache()
+
     const rows = await sql`
       SELECT
         r.id::text AS id,
@@ -189,6 +206,9 @@ export async function listHomePageFinishedRacesCurrentYear(): Promise<Race[]> {
   if (!sql) return []
 
   try {
+    await autoMarkPastRacesFinished(sql)
+    invalidateRacesMergeCache()
+
     const rows = await sql`
       SELECT
         r.id::text AS id,
@@ -243,6 +263,9 @@ export async function getRaceByIdFromDatabase(raceId: string): Promise<Race | nu
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(raceId)) {
     return null
   }
+
+  await autoMarkPastRacesFinished(sql)
+  invalidateRacesMergeCache()
 
   const rows = await sql`
     SELECT
@@ -773,6 +796,9 @@ export async function listAdminDatabaseRaces(calendarYear?: number | null): Prom
   if (calendarYear != null && (!Number.isFinite(calendarYear) || calendarYear < 1900 || calendarYear > 2100)) {
     throw new Error('Nieprawidłowy rok kalendarzowy.')
   }
+  await autoMarkPastRacesFinished(sql)
+  invalidateRacesMergeCache()
+
   const rows =
     calendarYear == null
       ? await sql`
@@ -1013,6 +1039,9 @@ export async function getAdminRaceForEdit(raceId: string): Promise<AdminRaceEdit
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(raceId)) {
     return null
   }
+
+  await autoMarkPastRacesFinished(sql)
+  invalidateRacesMergeCache()
 
   const raceRows = await sql`
     SELECT
