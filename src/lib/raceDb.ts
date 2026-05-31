@@ -200,7 +200,7 @@ export async function listHomePageRacesCurrentYear(): Promise<Race[]> {
   }
 }
 
-/** Zakończone wyścigi na stronie głównej (wszystkie lata). */
+/** Zakończone wyścigi (wszystkie lata), od najnowszego. */
 export async function listHomePageFinishedRacesCurrentYear(): Promise<Race[]> {
   const sql = getDb()
   if (!sql) return []
@@ -247,7 +247,7 @@ export async function listHomePageFinishedRacesCurrentYear(): Promise<Race[]> {
           OR r.race_date < CURRENT_DATE
         )
         AND r.status <> 'draft'::race_status
-      ORDER BY r.race_date ASC, r.name ASC
+      ORDER BY r.race_date DESC, r.name ASC
     `
     return (rows as Record<string, unknown>[]).map(rowToRace)
   } catch (e) {

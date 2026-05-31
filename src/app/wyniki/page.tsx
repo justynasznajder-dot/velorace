@@ -45,6 +45,12 @@ function sortByDateAsc(a: Race, b: Race): number {
   return a.name.localeCompare(b.name, 'pl')
 }
 
+function sortByDateDesc(a: Race, b: Race): number {
+  if (a.date > b.date) return -1
+  if (a.date < b.date) return 1
+  return a.name.localeCompare(b.name, 'pl')
+}
+
 function RaceCard({ race }: { race: Race }) {
   const { day, month, full } = formatDate(race.date)
   return (
@@ -100,7 +106,7 @@ export default async function WynikiPage({ searchParams }: Props) {
 
   const racesInYear = allRaces.filter(r => raceYear(r.date) === selectedYear)
   const upcomingRaces = racesInYear.filter(r => !isRaceFinished(r)).sort(sortByDateAsc)
-  const finishedRaces = racesInYear.filter(isRaceFinished).sort(sortByDateAsc)
+  const finishedRaces = racesInYear.filter(isRaceFinished).sort(sortByDateDesc)
 
   return (
     <>
